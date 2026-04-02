@@ -1,0 +1,55 @@
+{
+  "colors": {
+    "main": "#20DFBF",
+    "accent": "#DF4020",
+    "foreground": "#F6FEFC",
+    "background": "#010908",
+    "container": "#0F1A18",
+    "outline": "#172624",
+    "neutral": "#80B2AA",
+    "info": "#2080DF",
+    "gold_gradient": ["#FFEE99", "#F7D56E", "#EBB447"]
+  },
+  "fonts": {
+    "title": {
+      "font_family": "DM Sans",
+      "font_size": 40,
+      "font_weight": 700,
+      "line_height": 48
+    },
+    "header": {
+      "font_family": "DM Sans",
+      "font_size": 32,
+      "font_weight": 700,
+      "line_height": 40
+    },
+    "subheader": {
+      "font_family": "DM Sans",
+      "font_size": 24,
+      "font_weight": 700,
+      "line_height": 30
+    },
+    "large": {
+      "font_family": "DM Sans",
+      "font_size": 20,
+      "line_height": 24
+    },
+    "medium": {
+      "font_family": "DM Sans",
+      "font_size": 16,
+      "line_height": 20
+    },
+    "small": {
+      "font_family": "DM Sans",
+      "font_size": 12,
+      "line_height": 16
+    }
+  },
+  "spacing": {
+    "xs": 2,
+    "s": 4,
+    "m": 8,
+    "l": 16,
+    "xl": 32
+  }
+}
