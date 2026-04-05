@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-Streetballer is a basketball community app that helps amateur basketball players find courts, organize pick-up games, and compete with others. Basketball players often face a lack of playing opportunities due to poorly connected local basketball communities, sports clubs' structures and schedules that are incompatible with them, and the unrealiable nature of pick-up games. With Streetballer, players can browse a global map of more than 50000 basketball courts, see when other players are playing, sign up to play wherever and whenever it suits them, and gamify the entire playing experience by building their team, recording scores, and earning league points.
+For amateur basketball players who face a lack of playing opportunities, Streetballer is a mobile app that that helps them find courts, organize pick-up games, and compete with others. Unlike other community apps or local solutions, Streetballer lets players browse a global map of more than 50000 basketball courts, see when other players are playing, sign up to play wherever and whenever it suits them, and gamify the entire playing experience by building their team, recording scores, and earning league points.
 
 ## Project Overview
 
@@ -22,16 +22,39 @@ Streetballer is a basketball community app that helps amateur basketball players
 
 ## Tech Stack
 
-| Layer                 | Technology                               |
-| --------------------- | ---------------------------------------- |
-| Operating Systems     | Android, iOS, Web                        |
-| Design                | Figma                                    |
-| Frontend              | Dart, Flutter                            |
-| Backend               | Python, FastAPI                          |
-| Database              | MongoDB                                  |
-| Analytics             | PostHog                                  |
-| DevOps                | Google Cloud, Jenkins, Docker, CodeMagic |
-| Repository Management | Bazel                                    |
+| Layer          | Technology                                      |
+| -------------- | ----------------------------------------------- |
+| Target OS      | Android, iOS, Web                               |
+| Frontend       | Dart, Flutter                                   |
+| Backend        | Python, FastAPI                                 |
+| Database       | MongoDB                                         |
+| Analytics      | PostHog                                         |
+| Infrastructure | Google Cloud, Bazel, Jenkins, Docker, CodeMagic |
+
+## Libraries & Tools
+
+| Purpose               | Layer    | Libraries                   |
+| --------------------- | -------- | --------------------------- |
+| State Management      | Frontend | flutter_riverpod            |
+| Dependency Injection  | Frontend | flutter_riverpod            |
+| Navigation            | Frontend | go_router                   |
+| Local Storage         | Frontend | flutter_secure_storage      |
+| HTTP Client           | Frontend | http                        |
+| Localization          | Frontend | intl, flutter_localizations |
+| Maps                  | Frontend | google_maps_flutter         |
+| Geolocation           | Frontend | geolocator                  |
+| SVG Images            | Frontend | flutter_svg                 |
+| QR Codes              | Frontend | mobile_scanner, qr_flutter  |
+| Environment Variables | Frontend | envied                      |
+| Testing               | Frontend | test                        |
+| Package Manager       | Backend  | uv                          |
+| Database Driver       | Backend  | pymongo                     |
+| Credential Hashing    | Backend  | argon2-cffi                 |
+| Cron Jobs             | Backend  | python-crontab              |
+| Environment Variables | Backend  | python-dotenv               |
+| Email Driver          | Backend  | smtplib                     |
+| Authentication        | Backend  | pyjwt                       |
+| Testing               | Backend  | pytest                      |
 
 ## Folder Structure
 
@@ -98,62 +121,38 @@ Streetballer is a basketball community app that helps amateur basketball players
     - tests (Testing Files)
     - test.py (Testing Entrypoint)
 
-## Instructions & Preferences
+## General Preferences
 
-| Do                                                                           | Don't                                                                        |
-| ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| Short files with a single specific responsibility                            | Complete but long files with multiple responsibilities                       |
-| Verbose code that is easy to understand on its own                           | Extensive comments or abbreviated variable names                             |
-| Reusable code components (DRY)                                               | Duplicate logic                                                              |
-| Repeated and consistent patterns                                             | Individual and case-by-case implementation across files                      |
-| One component per purpose with customizable properties for different flavors | Many components per purpose with fixed properties for different flavors      |
-| Consistent, straight-forward, junior-friendly patterns                       | Inconsistent or complex coding patterns                                      |
-| Monolithic architecture                                                      | Microservices architecture                                                   |
-| Performance-optimized code based on official documentation best practices    | Compromising performance for pure developer-friendliness                     |
-| Strict type safety                                                           | Loose type flexibility                                                       |
-| Simple and targeted libraries                                                | Heavy and mostly unused batteries-included libraries                         |
-| Popular, proven, well-documented libraries                                   | Little-known, experimental, outdated libraries                               |
-| Provider-agnostic custom library wrappers that expose specific functionality | Direct library calls in multiple places                                      |
-| Custom or free-library-assisted implementation of features                   | Paid services and vendor lock-in, unless explicitly discussed                |
-| Efficient database indexing, querying, caching                               | Data duplication or inefficient queries in database interactions             |
-| Recognizable business logic with separate technical implementation           | Business logic and technical implementation in the same place                |
-| Returning null/false/empty values instead of throwing errors where possible  | Throwing errors where a null/false/empty value communicates the same message |
-| Error propagation for blocking tasks, error catching for non-blocking tasks  | Unpredictable errors that disrupt user experience or block code execution    |
-| Global catch-all error handling as a complement to local error handling      | Full dependence on local error handling                                      |
-| Detailed errors for developers, minimal but informative errors for users     | Non-standard and unpredictable error structure                               |
-| Dedicated README.md documentation files for each part of the application     | Distributed comments as a means of documentation                             |
-| Environment variables managed in a centralized .env file                     | CLI arguments or other methods to set environment variables                  |
-| Generous usage of environment variables for flexibility                      | Hard-coding of values that could logically be an environment variable        |
-| Localization managed from centralized .arb or .json files                    | Hard-coded text tokens                                                       |
-| Pull-to-refresh implementation on all screens                                | Polling or websocket-based data reload                                       |
-| Skeleton layout placeholders to reflect loading states                       | Spinner animations to reflect loading states                                 |
-| Minimalist toast messages to inform users of updates                         | Silent or obtrusive updates                                                  |
-| Ask questions, explain thinking, and propose ideas when in doubt             | Making guesses about decisions not specifically documented                   |
+| Do                                                                 | Don't                                                                  |
+| ------------------------------------------------------------------ | ---------------------------------------------------------------------- |
+| Short files with a single specific responsibility                  | Complete but long files with multiple responsibilities                 |
+| Verbose code that is easy to understand on its own                 | Extensive comments or abbreviated variable names                       |
+| Reusable and customizable code components                          | Duplicate code implementation                                          |
+| Repeated, consistent, junior-friendly patterns                     | Case-by-case logic, inconsistencies across files, complex patterns     |
+| Strict type safety                                                 | Loose type flexibility                                                 |
+| Recognizable business logic separate from technical implementation | Overlap of business logic and technical implementation                 |
+| Performance-optimized code based on official documentation         | Compromise of performance for developer-friendliness                   |
+| Specific and targeted libraries                                    | Heavy batteries-included libraries                                     |
+| Popular, proven, well-documented libraries                         | Little-known, experimental, outdated libraries                         |
+| Provider-agnostic custom library wrapping                          | Direct library calls in multiple places                                |
+| Returning null/false/empty values instead of throwing errors       | Throwing errors when a null/false/empty value communicates the message |
+| Detailed errors for developers, minimal errors for users           | Non-standard and unpredictable error structure                         |
+| Local error handling with global error handling as a fallback      | Silent or blocking errors                                              |
+| Efficient database indexing, querying, caching                     | Data duplication or inefficiencies in database interactions            |
+| Skeleton-style or spinner-style loading states                     | Static loading states                                                  |
+| Localization managed in centralized .arb or .json files            | Hard-coded text tokens                                                 |
+| Environment variables managed in centralized .env files            | CLI arguments or hard-coded values to define environment variables     |
+| Centralized documentation with README.md files                     | Distributed comments as a means of documentation                       |
+| Ask questions, explain thinking, propose ideas when in doubt       | Guessing about decisions not specifically documented                   |
 
-## Libraries
+## Structural Choices
 
-| Purpose               | Layer    | Libraries                   |
-| --------------------- | -------- | --------------------------- |
-| State Management      | Frontend | flutter_riverpod            |
-| Dependency Injection  | Frontend | flutter_riverpod            |
-| Navigation            | Frontend | go_router                   |
-| Local Storage         | Frontend | flutter_secure_storage      |
-| HTTP Client           | Frontend | http                        |
-| Localization          | Frontend | intl, flutter_localizations |
-| Maps                  | Frontend | google_maps_flutter         |
-| Geolocation           | Frontend | geolocator                  |
-| SVG Images            | Frontend | flutter_svg                 |
-| QR Codes              | Frontend | mobile_scanner, qr_flutter  |
-| Environment Variables | Frontend | envied                      |
-| Testing               | Frontend | test                        |
-| Package Manager       | Backend  | uv                          |
-| Database Driver       | Backend  | pymongo                     |
-| Credential Hashing    | Backend  | argon2-cffi                 |
-| Cron Jobs             | Backend  | python-crontab              |
-| Environment Variables | Backend  | python-dotenv               |
-| Email Driver          | Backend  | smtplib                     |
-| Authentication        | Backend  | pyjwt                       |
-| Testing               | Backend  | pytest                      |
+- Architecture: Build an easy-to-maintain monolith rather than complex highly optimized microservices.
+- Authentication: Adhere to OAuth2 best practices and implement lazy login that only requires authentication for features that either A) read requester-specific data or B) write data.
+- Testing: Follow a TDD approach and work in red/green/refactor cycles, only testing top-level logic only to recursively and efficiently ensure high coverage.
+- Security: Robust baseline security comes first, beyond that, excellent user experience comes before additional potentially annoying security measures.
+- Localization: English is the default locale with more languages to be added later.
+- DevOps: Write and maintain scripts to enable an agile CI/CD pipeline.
 
 ## Detailed Documentation
 
@@ -166,33 +165,24 @@ Detailed requirements are documented in the .claude/ folder and structured as fo
 
 ## Cooperation Process
 
-Cooperation is based on the Double Diamond framework by the British Design Council. Sessions should generally reflect the steps outlined below. You have the freedom to use your judgement to shorten, skip, or merge steps when a given task allows it for the sake of token usage optimization.
+Cooperation is based on the Double Diamond framework by the British Design Council. You may shorten, skip, or merge steps when a given task allows it for token optimization.
 
-1. Discover (done when you have enough information): Based on a one-line goal description, ask questions and browse documentation to explore and understand the context.
-2. Define (done when consensus is reached): Narrow the information down to the specific requirements, methods, and expected output of the session.
-3. Develop (done when all tests pass): Execute the defined tasks and run tests.
-4. Deliver (done when changes are committed to source control): Implement feedback, document the session, and commit to source control with an informative message.
+1. Discover: Based on a one-line goal description, ask questions and browse documentation to explore context.
+2. Define: Narrow the information down to specific requirements, methods, and expected output.
+3. Develop: Execute the defined tasks and run tests.
+4. Deliver: Implement feedback, document the changes, and commit to source control with an informative message.
 
-## Further Guidelines
+## Coding Agent Comments (Managed by Coding Agent)
 
-- Authentication: Authentication follows a lazy login pattern where authentication is only required for features that either A) read data that is specific to the requester or B) write data to the database. Everything else (i.e. pure anonymous GET requests) is freely available. The leading principle is to reduce friction for the user as much as possible.
-- Testing: Follow a test-driven development approach and work in red/green/refactor cycles. Testing should be rigorous but only test top-level logic, which encompasses route controllers and middleware on the backend and screens on the frontend. Elegant error handling should make errors easy to trace back from the top level. Do not bother with vanity metrics such as code coverage.
-- Localization: Streetballer supports English (default) and Spanish, with more languages to be added later. Never hard-code localized text, always manage text tokens in single-source-of-truth locale files.
-- Security: Adhere to OAuth2 best practices and take a silent security over a blocking security approach. Above a robust and sufficient level of security, excellent user experience always has priority over additional potentially annoying security measures. Security should be treated as a matter of "as-little-as-necessary" rather than "as-much-as-possible".
-- DevOps: Agile CI/CD is a critical success metric to continuously develop Streetballer. Write and maintain the files required for the entire DevOps pipeline in the dedicated folders.
-
-## Claude Code Comments (Managed by Claude Code)
-
-This section documents further additions to CLAUDE.md that Claude Code deems sensible. At the end of every session, update the Project Status, Commands, and Notes sections autonomously and commit changes to source control with an informative commit message. Make sure CLAUDE.md never exceeds 300 lines, and if it starts to approach that limit, prune the Notes section first to remove outdated and unnecessary lines.
+At the end of every session, update "Project Status", "Commands", and "Notes" autonomously and commit changes to source control with an informative commit message. Make sure this file never exceeds 300 lines. Prune "Notes" first to remove unnecessary lines.
 
 ### Project Status
 
-| Task                     | Comments                                                                                  |
-| ------------------------ | ----------------------------------------------------------------------------------------- |
-| Last Completed Task      | Social auth stubs, password reset with email, and email verification                      |
-| Current Task             |                                                                                           |
-| Next Task                | Player, court, and game endpoints                                                         |
-| Current Blocking Factors |                                                                                           |
+| Task             | Comments                                                             |
+| ---------------- | -------------------------------------------------------------------- |
+| Last Task        | Social auth stubs, password reset with email, and email verification |
+| Next Task        | Player, court, and game endpoints                                    |
+| Blocking Factors |                                                                      |
 
 ### Commands
 
