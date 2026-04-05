@@ -1,0 +1,11 @@
+# Environment
+backend/.env
+
+# Python
+backend/.venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/.pytest_cache/
+
+# Build
+backend/dist/

@@ -187,16 +187,23 @@ This section documents further additions to CLAUDE.md that Claude Code deems sen
 
 ### Project Status
 
-| Task                     | Comments |
-| ------------------------ | -------- |
-| Last Completed Task      |          |
-| Current Task             |          |
-| Next Task                |          |
-| Current Blocking Factors |          |
+| Task                     | Comments                                                          |
+| ------------------------ | ----------------------------------------------------------------- |
+| Last Completed Task      | Backend project setup (structure, deps, MongoDB, env, health check) |
+| Current Task             |                                                                   |
+| Next Task                | Authentication endpoints (log-in, sign-up, token refresh)         |
+| Current Blocking Factors |                                                                   |
 
 ### Commands
 
-| Command | Task |
-| ------- | ---- |
+| Command                                                          | Task                 |
+| ---------------------------------------------------------------- | -------------------- |
+| `cd backend && uv run uvicorn src.main:app --port 3000 --reload` | Start dev server     |
+| `cd backend && uv run pytest test/tests/ -v`                     | Run tests            |
+| `cd backend && uv sync --dev`                                    | Install dependencies |
 
 ### Notes
+
+- Backend lives in `backend/`, run all commands from that directory
+- uv creates a `.venv` — IDE may show false "not installed" hints for system Python
+- `.env` is gitignored; use `.env.example` as the template
