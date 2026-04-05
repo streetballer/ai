@@ -45,7 +45,7 @@ All requests to the server, without exception and regardless of errors or succes
 | GET /players/:player_id        | Get player             |                                                          | { player }                                        | 404                 |
 | GET /players/:player_id/record | Get record with player |                                                          | { team: { won, lost }, opponents: { won, lost } } | 401, 404            |
 | GET /places                    | Search places          | { text, lon, lat } OR { lon, lat } OR { text }           | { places }                                        | 422                 |
-| GET /courts                    | Search courts          | { lon, lat }                                             | { courts }                                        | 422                 |
+| GET /courts                    | Search courts          | { lon, lat } OR { lon, lat, radius }                     | { courts }                                        | 422                 |
 | POST /courts                   | Add court              | { lon, lat, name }                                       | { court }                                         | 401, 409, 422       |
 | GET /courts/:court_id          | Get court              |                                                          | { court }                                         | 404                 |
 | GET /games                     | Search games           | { court_id } OR { lon, lat }                             | { games, courts }                                 | 422                 |
