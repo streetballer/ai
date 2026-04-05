@@ -16,6 +16,14 @@ def setup_indexes() -> None:
     db = get_database()
     db.players.create_index("username", unique=True)
     db.players.create_index("email", unique=True)
+    db.players.create_index([("geolocation", "2dsphere")], sparse=True)
+    db.players.create_index([("username", "text")])
+    db.courts.create_index([("geolocation", "2dsphere")])
+    db.games.create_index("court_id")
+    db.games.create_index("timestamp")
+    db.scores.create_index("player_ids")
+    db.places.create_index([("geolocation", "2dsphere")])
+    db.places.create_index([("address", "text")])
 
 
 def close_database() -> None:

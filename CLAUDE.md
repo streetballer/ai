@@ -178,11 +178,11 @@ At the end of every session, update "Project Status", "Commands", and "Notes" au
 
 ### Project Status
 
-| Task             | Comments                                                             |
-| ---------------- | -------------------------------------------------------------------- |
-| Last Task        | Social auth stubs, password reset with email, and email verification |
-| Next Task        | Player, court, and game endpoints                                    |
-| Blocking Factors |                                                                      |
+| Task             | Comments                                                              |
+| ---------------- | --------------------------------------------------------------------- |
+| Last Task        | Player, court, game, and place endpoints (11 endpoints, 46 new tests) |
+| Next Task        | Team, score, league, and settings endpoints                           |
+| Blocking Factors |                                                                       |
 
 ### Commands
 
