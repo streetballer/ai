@@ -197,3 +197,9 @@ At the end of every session, update "Project Status", "Commands", and "Notes" au
 - Backend lives in `backend/`, run all commands from that directory
 - uv creates a `.venv` — IDE may show false "not installed" hints for system Python
 - `.env` is gitignored; use `.env.example` as the template
+- Add CLAUDE.md updates to the Notes section only; never edit sections above it
+- Always enforce model field access levels (public/private/secret) when serializing API responses
+- Implement business logic exactly as specified in models.md — never extrapolate
+- MongoDB: use `$geoWithin $centerSphere` for range searches; `$nearSphere`/`$near` only for ordered nearest-document lookups
+- MongoDB: use text indexes (`$text`) over regex (`$regex`) for text search
+- MongoDB: when text + coordinates are both provided, search by text first then sort results by distance

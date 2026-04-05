@@ -1,8 +1,7 @@
 from math import radians, sin, cos, sqrt, atan2
+from src.common.constants.geo import EARTH_RADIUS_METERS
 from src.common.libraries.database import get_database
 from src.common.utilities.serialize import serialize_place
-
-EARTH_RADIUS_METERS = 6371000
 SEARCH_RADIUS_METERS = 50000
 SEARCH_LIMIT = 20
 

@@ -1,7 +1,6 @@
+from src.common.constants.geo import EARTH_RADIUS_METERS
 from src.common.libraries.database import get_database
 from src.common.utilities.serialize import serialize_court
-
-EARTH_RADIUS_METERS = 6371000
 DUPLICATE_RADIUS_METERS = 100
 PLACE_SEARCH_RADIUS_METERS = 50000
 
