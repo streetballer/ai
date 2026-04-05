@@ -34,4 +34,4 @@ def create_player(username: str, email: str, password: str) -> tuple[str | None,
         if "username" in exc.details.get("keyPattern", {}):
             return "username_taken", None
         return "email_taken", None
-    return None, {"access_token": access_token, "refresh_token": refresh_token}
+    return None, {"player_id": player_id, "access_token": access_token, "refresh_token": refresh_token}

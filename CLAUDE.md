@@ -189,9 +189,9 @@ This section documents further additions to CLAUDE.md that Claude Code deems sen
 
 | Task                     | Comments                                                                                  |
 | ------------------------ | ----------------------------------------------------------------------------------------- |
-| Last Completed Task      | Player registration and login (sign-up, log-in, duplicate handling)                       |
+| Last Completed Task      | Social auth stubs, password reset with email, and email verification                      |
 | Current Task             |                                                                                           |
-| Next Task                | Social auth (Google, Apple, Facebook) and password reset flow                             |
+| Next Task                | Player, court, and game endpoints                                                         |
 | Current Blocking Factors |                                                                                           |
 
 ### Commands

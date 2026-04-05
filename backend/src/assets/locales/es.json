@@ -1,0 +1,6 @@
+{
+    "email_verification_subject": "Verifica tu cuenta de Streetballer",
+    "email_verification_body": "<p>Hola {username},</p><p>Haz clic en el enlace para verificar tu correo electrónico:</p><p><a href='{link}'>Verificar correo</a></p><p>Este enlace caduca en 24 horas.</p>",
+    "password_reset_subject": "Restablecer contraseña de Streetballer",
+    "password_reset_body": "<p>Hola {username},</p><p>Haz clic en el enlace para restablecer tu contraseña:</p><p><a href='{link}'>Restablecer contraseña</a></p><p>Este enlace caduca en 1 hora. Si no solicitaste esto, puedes ignorar este correo.</p>"
+}
