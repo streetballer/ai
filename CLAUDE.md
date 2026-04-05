@@ -187,12 +187,12 @@ This section documents further additions to CLAUDE.md that Claude Code deems sen
 
 ### Project Status
 
-| Task                     | Comments                                                          |
-| ------------------------ | ----------------------------------------------------------------- |
-| Last Completed Task      | Backend project setup (structure, deps, MongoDB, env, health check) |
-| Current Task             |                                                                   |
-| Next Task                | Authentication endpoints (log-in, sign-up, token refresh)         |
-| Current Blocking Factors |                                                                   |
+| Task                     | Comments                                                                                  |
+| ------------------------ | ----------------------------------------------------------------------------------------- |
+| Last Completed Task      | Auth infrastructure (JWT library, hash library, auth middleware, token rotation endpoint) |
+| Current Task             |                                                                                           |
+| Next Task                | Authentication endpoints (log-in, sign-up, password reset)                                |
+| Current Blocking Factors |                                                                                           |
 
 ### Commands
 
