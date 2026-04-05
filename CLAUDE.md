@@ -189,9 +189,9 @@ This section documents further additions to CLAUDE.md that Claude Code deems sen
 
 | Task                     | Comments                                                                                  |
 | ------------------------ | ----------------------------------------------------------------------------------------- |
-| Last Completed Task      | Auth infrastructure (JWT library, hash library, auth middleware, token rotation endpoint) |
+| Last Completed Task      | Player registration and login (sign-up, log-in, duplicate handling)                       |
 | Current Task             |                                                                                           |
-| Next Task                | Authentication endpoints (log-in, sign-up, password reset)                                |
+| Next Task                | Social auth (Google, Apple, Facebook) and password reset flow                             |
 | Current Blocking Factors |                                                                                           |
 
 ### Commands

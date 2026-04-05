@@ -1,4 +1,4 @@
-from pymongo import MongoClient
+from pymongo import MongoClient, ASCENDING
 from pymongo.database import Database
 from src.common.environment.config import MONGODB_URI, MONGODB_NAME
 
@@ -10,6 +10,12 @@ def get_database() -> Database:
     if _client is None:
         _client = MongoClient(MONGODB_URI)
     return _client[MONGODB_NAME]
+
+
+def setup_indexes() -> None:
+    db = get_database()
+    db.players.create_index("username", unique=True)
+    db.players.create_index("email", unique=True)
 
 
 def close_database() -> None:
