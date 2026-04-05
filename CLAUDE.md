@@ -98,7 +98,7 @@ Streetballer is a basketball community app that helps amateur basketball players
     - tests (Testing Files)
     - test.py (Testing Entrypoint)
 
-## Preferences
+## Instructions & Preferences
 
 | Do                                                                           | Don't                                                                        |
 | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
@@ -109,6 +109,7 @@ Streetballer is a basketball community app that helps amateur basketball players
 | One component per purpose with customizable properties for different flavors | Many components per purpose with fixed properties for different flavors      |
 | Consistent, straight-forward, junior-friendly patterns                       | Inconsistent or complex coding patterns                                      |
 | Monolithic architecture                                                      | Microservices architecture                                                   |
+| Performance-optimized code based on official documentation best practices    | Compromising performance for pure developer-friendliness                     |
 | Strict type safety                                                           | Loose type flexibility                                                       |
 | Simple and targeted libraries                                                | Heavy and mostly unused batteries-included libraries                         |
 | Popular, proven, well-documented libraries                                   | Little-known, experimental, outdated libraries                               |
@@ -122,10 +123,12 @@ Streetballer is a basketball community app that helps amateur basketball players
 | Detailed errors for developers, minimal but informative errors for users     | Non-standard and unpredictable error structure                               |
 | Dedicated README.md documentation files for each part of the application     | Distributed comments as a means of documentation                             |
 | Environment variables managed in a centralized .env file                     | CLI arguments or other methods to set environment variables                  |
+| Generous usage of environment variables for flexibility                      | Hard-coding of values that could logically be an environment variable        |
 | Localization managed from centralized .arb or .json files                    | Hard-coded text tokens                                                       |
 | Pull-to-refresh implementation on all screens                                | Polling or websocket-based data reload                                       |
 | Skeleton layout placeholders to reflect loading states                       | Spinner animations to reflect loading states                                 |
 | Minimalist toast messages to inform users of updates                         | Silent or obtrusive updates                                                  |
+| Ask questions, explain thinking, and propose ideas when in doubt             | Making guesses about decisions not specifically documented                   |
 
 ## Libraries
 
@@ -152,52 +155,48 @@ Streetballer is a basketball community app that helps amateur basketball players
 | Authentication        | Backend  | pyjwt                       |
 | Testing               | Backend  | pytest                      |
 
-## Environment Variables
-
-| Purpose             | Layer    | Description                |
-| ------------------- | -------- | -------------------------- |
-| DART_ENV            | Frontend | Current Environment        |
-| BACKEND_URL         | Frontend | Backend API Base URL       |
-| GOOGLE_MAPS_API_KEY | Frontend | Google Maps API Key        |
-| PYTHON_ENV          | Backend  | Current Environment        |
-| PORT                | Backend  | Application Port           |
-| MONGODB_URI         | Backend  | MongoDB Connection String  |
-| JWT_SECRET          | Backend  | Secret Key for JWT Signing |
-| EMAIL_HOST          | Backend  | Email Server Host          |
-| EMAIL_ADDRESS       | Backend  | Email Server Address       |
-| EMAIL_PASSWORD      | Backend  | Email Server Password      |
-| POSTHOG_API_KEY     | Backend  | PostHog API Key            |
-
 ## Detailed Documentation
 
 Detailed requirements are documented in the .claude/ folder and structured as follows:
 
-- models.md documents the data structures and business logic: This file governs the implementation of data structures and rules
-- views.md documents the user interface and design guidelines: This file along with the referenced screenshots govern UI/UX implementation
-- controllers.md documents the API specification and technical implementation: This file governs the API development and structure
+- models.md documents the data structures and business logic: This file governs the project-specific data models and rules
+- views.md documents the user interface and design guidelines: This file along with the referenced screenshots govern the UI/UX design
+- controllers.md documents the API specification and technical implementation: This file governs the backend API
+- The subfolders in the .claude/ folder contains further assets that you may need to reference
+
+## Cooperation Process
+
+Cooperation is based on the Double Diamond framework by the British Design Council. Sessions should generally reflect the steps outlined below. You have the freedom to use your judgement to shorten, skip, or merge steps when a given task allows it for the sake of token usage optimization.
+
+1. Discover (done when you have enough information): Based on a one-line goal description, ask questions and browse documentation to explore and understand the context.
+2. Define (done when consensus is reached): Narrow the information down to the specific requirements, methods, and expected output of the session.
+3. Develop (done when all tests pass): Execute the defined tasks and run tests.
+4. Deliver (done when changes are committed to source control): Implement feedback, document the session, and commit to source control with an informative message.
 
 ## Further Guidelines
 
-### Authentication
+- Authentication: Authentication follows a lazy login pattern where authentication is only required for features that either A) read data that is specific to the requester or B) write data to the database. Everything else (i.e. pure anonymous GET requests) is freely available. The leading principle is to reduce friction for the user as much as possible.
+- Testing: Follow a test-driven development approach and work in red/green/refactor cycles. Testing should be rigorous but only test top-level logic, which encompasses route controllers and middleware on the backend and screens on the frontend. Elegant error handling should make errors easy to trace back from the top level. Do not bother with vanity metrics such as code coverage.
+- Localization: Streetballer supports English (default) and Spanish, with more languages to be added later. Never hard-code localized text, always manage text tokens in single-source-of-truth locale files.
+- Security: Adhere to OAuth2 best practices and take a silent security over a blocking security approach. Above a robust and sufficient level of security, excellent user experience always has priority over additional potentially annoying security measures. Security should be treated as a matter of "as-little-as-necessary" rather than "as-much-as-possible".
+- DevOps: Agile CI/CD is a critical success metric to continuously develop Streetballer. Write and maintain the files required for the entire DevOps pipeline in the dedicated folders.
 
-Authentication follows a lazy login pattern where authentication is only required for features that do one of two things: A) Operations that read data that is specific to the requester or B) Operations that write data to the database. Everything else (i.e. pure anonymous GET requests) is freely available. The leading principle is to reduce friction for the user as much as possible.
+## Claude Code Comments (Managed by Claude Code)
 
-### Testing
+This section documents further additions to CLAUDE.md that Claude Code deems sensible. At the end of every session, update the Project Status, Commands, and Notes sections autonomously and commit changes to source control with an informative commit message. Make sure CLAUDE.md never exceeds 300 lines, and if it starts to approach that limit, prune the Notes section first to remove outdated and unnecessary lines.
 
-Follow a test-driven development approach and work in red/green/refactor cycles. Though testing should be rigorous, only test top-level logic, which encompasses route controllers and middleware on the backend and screens on the frontend. Elegant error handling should make errors easy to trace back from the top level. Do not bother with vanity metrics such as code coverage.
+### Project Status
 
-### Localization
+| Task                     | Comments |
+| ------------------------ | -------- |
+| Last Completed Task      |          |
+| Current Task             |          |
+| Next Task                |          |
+| Current Blocking Factors |          |
 
-Streetballer supports English (default) and Spanish, with more languages to be added later. Never hard-code localized text, always manage text tokens in single-source-of-truth locale files.
+### Commands
 
-### Security
+| Command | Task |
+| ------- | ---- |
 
-Adhere to OAuth2 best practices and take a silent security over a blocking security approach. Above a robust and sufficient level of security, excellent user experience always has priority over additional potentially annoying security measures. Security should be treated as a matter of "as-little-as-necessary" rather than "as-much-as-possible".
-
-### DevOps
-
-Agile CI/CD is one of the most critical success metrics to gradually develop Streetballer further. Write and maintain the scripts and files required for the entire DevOps pipeline in the dedicated folders.
-
-### Performance Optimization
-
-Review and adhere to the latest performance optimization guidelines of the programming languages and frameworks used.
+### Notes
