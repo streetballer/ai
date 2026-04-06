@@ -6,7 +6,7 @@ from typing import Any
 @dataclass
 class Team:
     id: str = ""
-    color: str = "#20DFBF"
+    color: str = ""
     geolocation: dict | None = None
     court_id: str = ""
     last_activity: datetime | None = None

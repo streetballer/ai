@@ -4,6 +4,7 @@ from src.common.libraries.database import get_database
 from src.common.models.court import Court
 from src.common.models.player import Player
 from src.common.models.team import Team
+from src.common.utilities.color import generate_color
 from src.common.utilities.serialize import serialize_team
 
 TEAM_ACTIVE_HOURS = 4
@@ -83,7 +84,7 @@ def create_team(current_player_id: str, target_player_id: str) -> tuple[str | No
             geolocation = nearest.geolocation
 
     now = datetime.now(timezone.utc)
-    team = Team(color="#20DFBF", geolocation=geolocation, court_id=court_id, last_activity=now)
+    team = Team(color=generate_color(), geolocation=geolocation, court_id=court_id, last_activity=now)
     result = db.teams.insert_one(team.to_doc())
     team.id = str(result.inserted_id)
 
