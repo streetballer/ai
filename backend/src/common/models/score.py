@@ -20,6 +20,23 @@ class Score:
     court_id: str = ""
     place_ids: list[str] = field(default_factory=list)
 
+    def to_doc(self) -> dict[str, Any]:
+        return {
+            "timestamp": self.timestamp,
+            "result": list(self.result),
+            "points": list(self.points),
+            "players": [list(self.players[0]), list(self.players[1])],
+            "teams": list(self.teams),
+            "colors": list(self.colors),
+            "confirmations": self.confirmations,
+            "rejections": self.rejections,
+            "confirmed": self.confirmed,
+            "player_ids": self.player_ids,
+            "geolocation": self.geolocation,
+            "court_id": self.court_id,
+            "place_ids": self.place_ids,
+        }
+
     @classmethod
     def from_doc(cls, doc: dict[str, Any]) -> "Score":
         players_raw = doc.get("players", [[], []])

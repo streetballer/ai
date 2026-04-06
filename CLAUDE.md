@@ -178,11 +178,11 @@ At the end of every session, update "Project Status", "Commands", and "Notes" au
 
 ### Project Status
 
-| Task             | Comments                                                              |
-| ---------------- | --------------------------------------------------------------------- |
-| Last Task        | Teams module endpoints (6 endpoints, 27 tests)                        |
-| Next Task        | Score, league, and settings endpoints                                 |
-| Blocking Factors |                                                                       |
+| Task             | Comments                                        |
+| ---------------- | ----------------------------------------------- |
+| Last Task        | Scores module endpoints (5 endpoints, 27 tests) |
+| Next Task        | Build league module endpoint                    |
+| Blocking Factors |                                                 |
 
 ### Commands
 
