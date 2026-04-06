@@ -1,61 +1,58 @@
 from typing import Any
+from src.common.models.court import Court
+from src.common.models.game import Game
+from src.common.models.place import Place
+from src.common.models.player import Player
 
 
-def serialize_document(doc: dict[str, Any]) -> dict[str, Any]:
-    result = {k: v for k, v in doc.items() if k != "_id"}
-    result["id"] = str(doc["_id"])
-    return result
-
-
-def public_player(player: dict[str, Any]) -> dict[str, Any]:
+def public_player(player: Player) -> dict[str, Any]:
     return {
-        "id": str(player["_id"]),
-        "username": player.get("username"),
-        "language": player.get("language"),
-        "team_id": player.get("team_id"),
+        "id": player.id,
+        "username": player.username,
+        "language": player.language,
+        "team_id": player.team_id,
     }
 
 
-def private_player(player: dict[str, Any]) -> dict[str, Any]:
+def private_player(player: Player) -> dict[str, Any]:
     return {
-        "id": str(player["_id"]),
-        "username": player.get("username"),
-        "email": player.get("email"),
-        "email_verified": player.get("email_verified"),
-        "language": player.get("language"),
-        "team_id": player.get("team_id"),
-        "geolocation": player.get("geolocation"),
-        "google_id": player.get("google_id"),
-        "apple_id": player.get("apple_id"),
-        "facebook_id": player.get("facebook_id"),
+        "id": player.id,
+        "username": player.username,
+        "email": player.email,
+        "email_verified": player.email_verified,
+        "language": player.language,
+        "team_id": player.team_id,
+        "geolocation": player.geolocation,
+        "google_id": player.google_id,
+        "apple_id": player.apple_id,
+        "facebook_id": player.facebook_id,
     }
 
 
-def serialize_court(court: dict[str, Any]) -> dict[str, Any]:
+def serialize_court(court: Court) -> dict[str, Any]:
     return {
-        "id": str(court["_id"]),
-        "name": court.get("name"),
-        "geolocation": court.get("geolocation"),
-        "place_ids": court.get("place_ids", []),
+        "id": court.id,
+        "name": court.name,
+        "geolocation": court.geolocation,
+        "place_ids": court.place_ids,
     }
 
 
-def serialize_game(game: dict[str, Any]) -> dict[str, Any]:
-    timestamp = game.get("timestamp")
+def serialize_game(game: Game) -> dict[str, Any]:
     return {
-        "id": str(game["_id"]),
-        "timestamp": timestamp.isoformat() if timestamp else None,
-        "court_id": game.get("court_id"),
-        "player_ids": game.get("player_ids", []),
+        "id": game.id,
+        "timestamp": game.timestamp.isoformat() if game.timestamp else None,
+        "court_id": game.court_id,
+        "player_ids": game.player_ids,
     }
 
 
-def serialize_place(place: dict[str, Any]) -> dict[str, Any]:
+def serialize_place(place: Place) -> dict[str, Any]:
     return {
-        "id": str(place["_id"]),
-        "geolocation": place.get("geolocation"),
-        "geolocation_box": place.get("geolocation_box"),
-        "address": place.get("address", []),
-        "is_parent": place.get("is_parent", False),
-        "parent_ids": place.get("parent_ids", []),
+        "id": place.id,
+        "geolocation": place.geolocation,
+        "geolocation_box": place.geolocation_box,
+        "address": place.address,
+        "is_parent": place.is_parent,
+        "parent_ids": place.parent_ids,
     }

@@ -15,4 +15,4 @@ def refresh_tokens(token: str) -> ResponseModel:
     result = rotate_tokens(payload["sub"], token)
     if result is None:
         raise HTTPException(status_code=498, detail="Token expired or invalid")
-    return respond(data=result)
+    return respond(data={"access_token": result.access_token, "refresh_token": result.refresh_token})

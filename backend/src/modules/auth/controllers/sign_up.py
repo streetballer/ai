@@ -15,5 +15,5 @@ def sign_up(body: SignUpBody) -> ResponseModel:
         raise HTTPException(status_code=409, detail="Username already taken")
     if error == "email_taken":
         raise HTTPException(status_code=409, detail="Email already taken")
-    send_verification_email(result["player_id"], body.email, body.username)
-    return respond(data={"access_token": result["access_token"], "refresh_token": result["refresh_token"]})
+    send_verification_email(result.player_id, body.email, body.username)
+    return respond(data={"access_token": result.access_token, "refresh_token": result.refresh_token})

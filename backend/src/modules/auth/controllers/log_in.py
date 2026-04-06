@@ -12,4 +12,4 @@ def log_in(body: LogInBody) -> ResponseModel:
     result = authenticate_player(body.password, body.username, body.email)
     if result is None:
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    return respond(data=result)
+    return respond(data={"access_token": result.access_token, "refresh_token": result.refresh_token})

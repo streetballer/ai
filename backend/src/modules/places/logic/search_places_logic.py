@@ -1,9 +1,12 @@
 from math import radians, sin, cos, sqrt, atan2
 from src.common.constants.geo import EARTH_RADIUS_METERS
 from src.common.libraries.database import get_database
+from src.common.models.place import Place
 from src.common.utilities.serialize import serialize_place
+
 SEARCH_RADIUS_METERS = 50000
 SEARCH_LIMIT = 20
+PLACE_FIELDS_PROJECTION = {"_id": 1, "geolocation": 1, "geolocation_box": 1, "address": 1, "is_parent": 1, "parent_ids": 1}
 
 
 def _distance_meters(lon1: float, lat1: float, lon2: float, lat2: float) -> float:
@@ -20,24 +23,23 @@ def search_places(text: str | None, lon: float | None, lat: float | None) -> lis
     has_location = lon is not None and lat is not None
 
     if has_text:
-        query: dict = {"$text": {"$search": text}}
-        places = list(db.places.find(query).limit(SEARCH_LIMIT))
+        docs = list(db.places.find({"$text": {"$search": text}}, PLACE_FIELDS_PROJECTION).limit(SEARCH_LIMIT))
+        places = [Place.from_doc(doc) for doc in docs]
 
         if has_location:
-            def sort_key(place: dict) -> float:
-                geo = place.get("geolocation")
-                if geo and geo.get("coordinates"):
-                    coords = geo["coordinates"]
+            def sort_key(place: Place) -> float:
+                if place.geolocation and place.geolocation.get("coordinates"):
+                    coords = place.geolocation["coordinates"]
                     return _distance_meters(lon, lat, coords[0], coords[1])
                 return float("inf")
 
             places.sort(key=sort_key)
     else:
         radius_radians = SEARCH_RADIUS_METERS / EARTH_RADIUS_METERS
-        places = list(db.places.find({
-            "geolocation": {
-                "$geoWithin": {"$centerSphere": [[lon, lat], radius_radians]}
-            }
-        }).limit(SEARCH_LIMIT))
+        docs = list(db.places.find(
+            {"geolocation": {"$geoWithin": {"$centerSphere": [[lon, lat], radius_radians]}}},
+            PLACE_FIELDS_PROJECTION,
+        ).limit(SEARCH_LIMIT))
+        places = [Place.from_doc(doc) for doc in docs]
 
     return [serialize_place(p) for p in places]

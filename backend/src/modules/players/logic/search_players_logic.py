@@ -1,9 +1,13 @@
 from math import radians, sin, cos, sqrt, atan2
 from src.common.constants.geo import EARTH_RADIUS_METERS
 from src.common.libraries.database import get_database
+from src.common.models.player import Player
 from src.common.utilities.serialize import public_player
+
 SEARCH_RADIUS_METERS = 5000
 SEARCH_LIMIT = 20
+PUBLIC_PLAYER_PROJECTION = {"_id": 1, "username": 1, "language": 1, "team_id": 1}
+SEARCH_PLAYER_PROJECTION = {"_id": 1, "username": 1, "language": 1, "team_id": 1, "geolocation": 1}
 
 
 def _distance_meters(lon1: float, lat1: float, lon2: float, lat2: float) -> float:
@@ -17,27 +21,25 @@ def _distance_meters(lon1: float, lat1: float, lon2: float, lat2: float) -> floa
 def search_players_by_location(lon: float, lat: float) -> list[dict]:
     db = get_database()
     radius_radians = SEARCH_RADIUS_METERS / EARTH_RADIUS_METERS
-    players = db.players.find({
-        "geolocation": {
-            "$geoWithin": {"$centerSphere": [[lon, lat], radius_radians]}
-        }
-    }).limit(SEARCH_LIMIT)
-    return [public_player(p) for p in players]
+    docs = db.players.find(
+        {"geolocation": {"$geoWithin": {"$centerSphere": [[lon, lat], radius_radians]}}},
+        PUBLIC_PLAYER_PROJECTION,
+    ).limit(SEARCH_LIMIT)
+    return [public_player(Player.from_doc(doc)) for doc in docs]
 
 
 def search_players_by_text(text: str, lon: float | None = None, lat: float | None = None) -> list[dict]:
     db = get_database()
-    players = list(db.players.find({"$text": {"$search": text}}).limit(SEARCH_LIMIT))
-    results = [public_player(p) for p in players]
+    docs = list(db.players.find({"$text": {"$search": text}}, SEARCH_PLAYER_PROJECTION).limit(SEARCH_LIMIT))
+    players = [Player.from_doc(doc) for doc in docs]
 
     if lon is not None and lat is not None:
-        def sort_key(player: dict) -> float:
-            geo = next((p.get("geolocation") for p in players if str(p["_id"]) == player["id"]), None)
-            if geo and geo.get("coordinates"):
-                coords = geo["coordinates"]
+        def sort_key(player: Player) -> float:
+            if player.geolocation and player.geolocation.get("coordinates"):
+                coords = player.geolocation["coordinates"]
                 return _distance_meters(lon, lat, coords[0], coords[1])
             return float("inf")
 
-        results.sort(key=sort_key)
+        players.sort(key=sort_key)
 
-    return results
+    return [public_player(p) for p in players]

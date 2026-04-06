@@ -180,7 +180,7 @@ At the end of every session, update "Project Status", "Commands", and "Notes" au
 
 | Task             | Comments                                                              |
 | ---------------- | --------------------------------------------------------------------- |
-| Last Task        | Player, court, game, and place endpoints (11 endpoints, 46 new tests) |
+| Last Task        | Refactor backend: classes over dicts, explicit DB projections         |
 | Next Task        | Team, score, league, and settings endpoints                           |
 | Blocking Factors |                                                                       |
 
@@ -203,3 +203,5 @@ At the end of every session, update "Project Status", "Commands", and "Notes" au
 - MongoDB: use `$geoWithin $centerSphere` for range searches; `$nearSphere`/`$near` only for ordered nearest-document lookups
 - MongoDB: use text indexes (`$text`) over regex (`$regex`) for text search
 - MongoDB: when text + coordinates are both provided, search by text first then sort results by distance
+- Data models: use dataclasses (`Player`, `Court`, `Game`, `Place`, `Score`) in `src/common/models/`; always call `Model.from_doc(doc)` when reading from DB; always call `model.to_doc()` when inserting to DB
+- DB projections: every `find`/`find_one` call must include an explicit projection dict; default to `{"_id": 1}` for existence checks; define projections as module-level constants near the top of logic files

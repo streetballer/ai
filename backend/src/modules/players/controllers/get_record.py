@@ -15,4 +15,4 @@ def get_record(
     record = get_record_with_player(current_player_id, player_id)
     if record is None:
         raise HTTPException(status_code=404, detail="Player not found")
-    return respond(data=record)
+    return respond(data=record.to_dict())
