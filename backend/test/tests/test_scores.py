@@ -120,9 +120,11 @@ def test_get_scores_returns_422_without_player_id():
 
 def test_submit_score_returns_200():
     mock_db = MagicMock()
-    mock_db.players.find_one.side_effect = [PLAYER_DOC, OPPONENT_DOC]
+    mock_db.players.find.side_effect = [
+        [PLAYER_DOC, OPPONENT_DOC],
+        [PLAYER_DOC, OPPONENT_DOC],
+    ]
     mock_db.teams.find_one.side_effect = [TEAM_A_DOC, TEAM_B_DOC]
-    mock_db.players.find.side_effect = [[PLAYER_DOC], [OPPONENT_DOC]]
     mock_db.courts.find_one.return_value = COURT_DOC
     mock_db.scores.insert_one.return_value = MagicMock(inserted_id=ObjectId(SCORE_ID))
     with patch("src.modules.scores.logic.submit_score_logic.get_database", return_value=mock_db):
@@ -160,7 +162,7 @@ def test_submit_score_returns_422_when_score_out_of_range():
 
 def test_submit_score_returns_422_when_player_has_no_active_team():
     mock_db = MagicMock()
-    mock_db.players.find_one.return_value = {**PLAYER_DOC, "team_id": ""}
+    mock_db.players.find.return_value = [{**PLAYER_DOC, "team_id": ""}]
     mock_db.teams.find_one.return_value = None
     with patch("src.modules.scores.logic.submit_score_logic.get_database", return_value=mock_db):
         response = client.post(
@@ -173,7 +175,7 @@ def test_submit_score_returns_422_when_player_has_no_active_team():
 
 def test_submit_score_returns_422_when_opponent_not_found():
     mock_db = MagicMock()
-    mock_db.players.find_one.side_effect = [PLAYER_DOC, None]
+    mock_db.players.find.return_value = [PLAYER_DOC]
     mock_db.teams.find_one.return_value = TEAM_A_DOC
     with patch("src.modules.scores.logic.submit_score_logic.get_database", return_value=mock_db):
         response = client.post(
@@ -186,7 +188,7 @@ def test_submit_score_returns_422_when_opponent_not_found():
 
 def test_submit_score_returns_422_when_opponent_has_no_active_team():
     mock_db = MagicMock()
-    mock_db.players.find_one.side_effect = [PLAYER_DOC, {**OPPONENT_DOC, "team_id": ""}]
+    mock_db.players.find.return_value = [PLAYER_DOC, {**OPPONENT_DOC, "team_id": ""}]
     mock_db.teams.find_one.side_effect = [TEAM_A_DOC, None]
     with patch("src.modules.scores.logic.submit_score_logic.get_database", return_value=mock_db):
         response = client.post(
@@ -199,7 +201,7 @@ def test_submit_score_returns_422_when_opponent_has_no_active_team():
 
 def test_submit_score_returns_422_when_same_team():
     mock_db = MagicMock()
-    mock_db.players.find_one.side_effect = [
+    mock_db.players.find.return_value = [
         {**PLAYER_DOC, "team_id": TEAM_A_ID},
         {**OPPONENT_DOC, "team_id": TEAM_A_ID},
     ]
@@ -217,9 +219,11 @@ def test_submit_score_updates_ratings_when_winner_avg_leq_loser_avg():
     mock_db = MagicMock()
     weaker_player = {**PLAYER_DOC, "rating": 3}
     stronger_opponent = {**OPPONENT_DOC, "rating": 7}
-    mock_db.players.find_one.side_effect = [weaker_player, stronger_opponent]
+    mock_db.players.find.side_effect = [
+        [weaker_player, stronger_opponent],
+        [weaker_player, stronger_opponent],
+    ]
     mock_db.teams.find_one.side_effect = [TEAM_A_DOC, TEAM_B_DOC]
-    mock_db.players.find.side_effect = [[weaker_player], [stronger_opponent]]
     mock_db.courts.find_one.return_value = COURT_DOC
     mock_db.scores.insert_one.return_value = MagicMock(inserted_id=ObjectId(SCORE_ID))
     with patch("src.modules.scores.logic.submit_score_logic.get_database", return_value=mock_db):
@@ -236,9 +240,11 @@ def test_submit_score_skips_rating_update_when_winner_has_higher_avg():
     mock_db = MagicMock()
     stronger_player = {**PLAYER_DOC, "rating": 7}
     weaker_opponent = {**OPPONENT_DOC, "rating": 3}
-    mock_db.players.find_one.side_effect = [stronger_player, weaker_opponent]
+    mock_db.players.find.side_effect = [
+        [stronger_player, weaker_opponent],
+        [stronger_player, weaker_opponent],
+    ]
     mock_db.teams.find_one.side_effect = [TEAM_A_DOC, TEAM_B_DOC]
-    mock_db.players.find.side_effect = [[stronger_player], [weaker_opponent]]
     mock_db.courts.find_one.return_value = COURT_DOC
     mock_db.scores.insert_one.return_value = MagicMock(inserted_id=ObjectId(SCORE_ID))
     with patch("src.modules.scores.logic.submit_score_logic.get_database", return_value=mock_db):

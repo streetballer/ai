@@ -83,7 +83,7 @@ def test_search_teams_returns_422_with_only_lon():
 
 def test_create_team_returns_200():
     mock_db = MagicMock()
-    mock_db.players.find_one.side_effect = [
+    mock_db.players.find.return_value = [
         {**PLAYER_DOC, "team_id": ""},
         OTHER_PLAYER_DOC,
     ]
@@ -98,10 +98,7 @@ def test_create_team_returns_200():
 
 def test_create_team_returns_404_when_target_not_found():
     mock_db = MagicMock()
-    mock_db.players.find_one.side_effect = [
-        {**PLAYER_DOC, "team_id": ""},
-        None,
-    ]
+    mock_db.players.find.return_value = [{**PLAYER_DOC, "team_id": ""}]
     with patch("src.modules.teams.logic.create_team_logic.get_database", return_value=mock_db):
         response = client.post("/teams", json={"player_id": OTHER_PLAYER_ID}, headers=AUTH_HEADERS)
     assert response.status_code == 404
@@ -109,7 +106,7 @@ def test_create_team_returns_404_when_target_not_found():
 
 def test_create_team_returns_409_when_current_player_in_active_team():
     mock_db = MagicMock()
-    mock_db.players.find_one.return_value = PLAYER_DOC
+    mock_db.players.find.return_value = [PLAYER_DOC, OTHER_PLAYER_DOC]
     mock_db.teams.find_one.return_value = TEAM_DOC
     with patch("src.modules.teams.logic.create_team_logic.get_database", return_value=mock_db):
         response = client.post("/teams", json={"player_id": OTHER_PLAYER_ID}, headers=AUTH_HEADERS)
@@ -118,7 +115,7 @@ def test_create_team_returns_409_when_current_player_in_active_team():
 
 def test_create_team_returns_409_when_target_in_active_team():
     mock_db = MagicMock()
-    mock_db.players.find_one.side_effect = [
+    mock_db.players.find.return_value = [
         {**PLAYER_DOC, "team_id": ""},
         {**OTHER_PLAYER_DOC, "team_id": TEAM_ID},
     ]

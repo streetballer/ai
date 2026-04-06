@@ -8,7 +8,7 @@ from src.common.utilities.color import generate_color
 from src.common.utilities.serialize import serialize_team
 
 TEAM_ACTIVE_HOURS = 4
-NEAREST_COURT_MAX_DISTANCE = 10000
+NEAREST_COURT_MAX_DISTANCE = 200
 
 PLAYER_TEAM_PROJECTION = {"_id": 1, "team_id": 1, "geolocation": 1}
 NEAREST_COURT_PROJECTION = {"_id": 1, "geolocation": 1}
@@ -52,17 +52,18 @@ def create_team(current_player_id: str, target_player_id: str) -> tuple[str | No
     db = get_database()
 
     try:
-        current_doc = db.players.find_one({"_id": ObjectId(current_player_id)}, PLAYER_TEAM_PROJECTION)
+        docs = list(db.players.find(
+            {"_id": {"$in": [ObjectId(current_player_id), ObjectId(target_player_id)]}},
+            PLAYER_TEAM_PROJECTION,
+        ))
     except Exception:
-        return "not_found", None
-    if current_doc is None:
         return "not_found", None
 
-    try:
-        target_doc = db.players.find_one({"_id": ObjectId(target_player_id)}, PLAYER_TEAM_PROJECTION)
-    except Exception:
-        return "not_found", None
-    if target_doc is None:
+    docs_by_id = {str(d["_id"]): d for d in docs}
+    current_doc = docs_by_id.get(current_player_id)
+    target_doc = docs_by_id.get(target_player_id)
+
+    if current_doc is None or target_doc is None:
         return "not_found", None
 
     current_player = Player.from_doc(current_doc)
@@ -88,7 +89,9 @@ def create_team(current_player_id: str, target_player_id: str) -> tuple[str | No
     result = db.teams.insert_one(team.to_doc())
     team.id = str(result.inserted_id)
 
-    db.players.update_one({"_id": current_doc["_id"]}, {"$set": {"team_id": team.id}})
-    db.players.update_one({"_id": target_doc["_id"]}, {"$set": {"team_id": team.id}})
+    db.players.update_many(
+        {"_id": {"$in": [current_doc["_id"], target_doc["_id"]]}},
+        {"$set": {"team_id": team.id}},
+    )
 
     return None, serialize_team(team)

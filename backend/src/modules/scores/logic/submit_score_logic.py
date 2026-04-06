@@ -36,9 +36,11 @@ def _get_active_team(db, team_id: str) -> Team | None:
     return team if last_activity >= cutoff else None
 
 
-def _get_team_players(db, team_id: str) -> list[Player]:
-    docs = list(db.players.find({"team_id": team_id}, TEAM_PLAYERS_PROJECTION))
-    return [Player.from_doc(doc) for doc in docs]
+def _get_both_team_players(db, team_id_a: str, team_id_b: str) -> tuple[list[Player], list[Player]]:
+    docs = list(db.players.find({"team_id": {"$in": [team_id_a, team_id_b]}}, TEAM_PLAYERS_PROJECTION))
+    players_a = [Player.from_doc(d) for d in docs if d.get("team_id") == team_id_a]
+    players_b = [Player.from_doc(d) for d in docs if d.get("team_id") == team_id_b]
+    return players_a, players_b
 
 
 def _calculate_points(winner_avg: float, loser_avg: float) -> int:
@@ -62,23 +64,26 @@ def submit_score(
     db = get_database()
 
     try:
-        player_doc = db.players.find_one({"_id": ObjectId(player_id)}, PLAYER_INFO_PROJECTION)
+        player_docs = list(db.players.find(
+            {"_id": {"$in": [ObjectId(player_id), ObjectId(opponent_id)]}},
+            PLAYER_INFO_PROJECTION,
+        ))
     except Exception:
         return "player_not_found", None
+
+    docs_by_id = {str(d["_id"]): d for d in player_docs}
+    player_doc = docs_by_id.get(player_id)
+    opponent_doc = docs_by_id.get(opponent_id)
+
     if player_doc is None:
         return "player_not_found", None
+    if opponent_doc is None:
+        return "opponent_not_found", None
 
     current_player = Player.from_doc(player_doc)
     team_a = _get_active_team(db, current_player.team_id)
     if team_a is None:
         return "no_active_team", None
-
-    try:
-        opponent_doc = db.players.find_one({"_id": ObjectId(opponent_id)}, PLAYER_INFO_PROJECTION)
-    except Exception:
-        return "opponent_not_found", None
-    if opponent_doc is None:
-        return "opponent_not_found", None
 
     opponent = Player.from_doc(opponent_doc)
     team_b = _get_active_team(db, opponent.team_id)
@@ -88,8 +93,7 @@ def submit_score(
     if team_a.id == team_b.id:
         return "same_team", None
 
-    players_a = _get_team_players(db, team_a.id)
-    players_b = _get_team_players(db, team_b.id)
+    players_a, players_b = _get_both_team_players(db, team_a.id, team_b.id)
     player_ids_a = [p.id for p in players_a]
     player_ids_b = [p.id for p in players_b]
 
@@ -148,8 +152,10 @@ def submit_score(
     if _side_confirmed(player_ids_a, confirmations) and _side_confirmed(player_ids_b, confirmations):
         score.confirmed = True
 
-    db.teams.update_one({"_id": ObjectId(team_a.id)}, {"$set": {"last_activity": now}})
-    db.teams.update_one({"_id": ObjectId(team_b.id)}, {"$set": {"last_activity": now}})
+    db.teams.update_many(
+        {"_id": {"$in": [ObjectId(team_a.id), ObjectId(team_b.id)]}},
+        {"$set": {"last_activity": now}},
+    )
 
     result = db.scores.insert_one(score.to_doc())
     score.id = str(result.inserted_id)
