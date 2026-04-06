@@ -11,13 +11,13 @@ PASSWORD = "password123"
 def mock_db_with_player(by_username: bool = True) -> MagicMock:
     db = MagicMock()
     player = {"_id": "player_123", "password_hash": hash_value(PASSWORD)}
-    db.players.find_one.return_value = player
+    db.players.get_one.return_value = player
     return db
 
 
 def mock_db_no_player() -> MagicMock:
     db = MagicMock()
-    db.players.find_one.return_value = None
+    db.players.get_one.return_value = None
     return db
 
 

@@ -26,7 +26,7 @@ PUBLIC_PLAYER_PROJECTION = {"_id": 1, "username": 1, "language": 1, "team_id": 1
 def get_score(score_id: str) -> dict | None:
     db = get_database()
     try:
-        doc = db.scores.find_one({"_id": ObjectId(score_id)}, SCORE_FIELDS_PROJECTION)
+        doc = db.scores.get_one({"_id": ObjectId(score_id)}, SCORE_FIELDS_PROJECTION)
     except Exception:
         return None
     if doc is None:
@@ -34,7 +34,7 @@ def get_score(score_id: str) -> dict | None:
 
     score = Score.from_doc(doc)
     player_object_ids = [ObjectId(pid) for pid in score.player_ids if pid]
-    player_docs = list(db.players.find({"_id": {"$in": player_object_ids}}, PUBLIC_PLAYER_PROJECTION))
+    player_docs = db.players.get_many({"_id": {"$in": player_object_ids}}, PUBLIC_PLAYER_PROJECTION)
     players = [public_player(Player.from_doc(p)) for p in player_docs]
 
     return {"score": serialize_score(score), "players": players}

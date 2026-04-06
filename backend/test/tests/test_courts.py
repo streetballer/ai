@@ -28,17 +28,11 @@ PLACE_DOC = {
 }
 
 
-def _make_cursor(docs: list) -> MagicMock:
-    cursor = MagicMock()
-    cursor.limit.return_value = docs
-    return cursor
-
-
 # --- GET /courts ---
 
 def test_search_courts_returns_200():
     mock_db = MagicMock()
-    mock_db.courts.find.return_value = [COURT_DOC]
+    mock_db.courts.get_many.return_value = [COURT_DOC]
     with patch("src.modules.courts.logic.search_courts_logic.get_database", return_value=mock_db):
         response = client.get("/courts", params={"lon": -118.47, "lat": 33.98})
     assert response.status_code == 200
@@ -47,7 +41,7 @@ def test_search_courts_returns_200():
 
 def test_search_courts_accepts_custom_radius():
     mock_db = MagicMock()
-    mock_db.courts.find.return_value = [COURT_DOC]
+    mock_db.courts.get_many.return_value = [COURT_DOC]
     with patch("src.modules.courts.logic.search_courts_logic.get_database", return_value=mock_db):
         response = client.get("/courts", params={"lon": -118.47, "lat": 33.98, "radius": 500})
     assert response.status_code == 200
@@ -67,9 +61,9 @@ def test_search_courts_returns_422_with_only_lon():
 
 def test_add_court_returns_200():
     mock_db = MagicMock()
-    mock_db.courts.find_one.side_effect = [None, COURT_DOC]
-    mock_db.courts.insert_one.return_value = MagicMock(inserted_id=ObjectId(COURT_ID))
-    mock_db.places.find_one.return_value = None
+    mock_db.courts.get_one.side_effect = [None, COURT_DOC]
+    mock_db.courts.insert_one.return_value = COURT_ID
+    mock_db.places.get_one.return_value = None
     with patch("src.modules.courts.logic.add_court_logic.get_database", return_value=mock_db):
         response = client.post(
             "/courts",
@@ -83,9 +77,9 @@ def test_add_court_returns_200():
 def test_add_court_assigns_place_ids():
     mock_db = MagicMock()
     court_with_places = {**COURT_DOC, "place_ids": [PLACE_ID, PARENT_PLACE_ID]}
-    mock_db.courts.find_one.side_effect = [None, court_with_places]
-    mock_db.courts.insert_one.return_value = MagicMock(inserted_id=ObjectId(COURT_ID))
-    mock_db.places.find_one.return_value = PLACE_DOC
+    mock_db.courts.get_one.side_effect = [None, court_with_places]
+    mock_db.courts.insert_one.return_value = COURT_ID
+    mock_db.places.get_one.return_value = PLACE_DOC
     with patch("src.modules.courts.logic.add_court_logic.get_database", return_value=mock_db):
         response = client.post(
             "/courts",
@@ -100,7 +94,7 @@ def test_add_court_assigns_place_ids():
 
 def test_add_court_returns_409_when_duplicate():
     mock_db = MagicMock()
-    mock_db.courts.find_one.return_value = COURT_DOC
+    mock_db.courts.get_one.return_value = COURT_DOC
     with patch("src.modules.courts.logic.add_court_logic.get_database", return_value=mock_db):
         response = client.post(
             "/courts",
@@ -124,7 +118,7 @@ def test_add_court_returns_422_with_missing_fields():
 
 def test_get_court_returns_200():
     mock_db = MagicMock()
-    mock_db.courts.find_one.return_value = COURT_DOC
+    mock_db.courts.get_one.return_value = COURT_DOC
     with patch("src.modules.courts.logic.get_court_logic.get_database", return_value=mock_db):
         response = client.get(f"/courts/{COURT_ID}")
     assert response.status_code == 200
@@ -134,7 +128,7 @@ def test_get_court_returns_200():
 
 def test_get_court_returns_404_when_not_found():
     mock_db = MagicMock()
-    mock_db.courts.find_one.return_value = None
+    mock_db.courts.get_one.return_value = None
     with patch("src.modules.courts.logic.get_court_logic.get_database", return_value=mock_db):
         response = client.get(f"/courts/{COURT_ID}")
     assert response.status_code == 404

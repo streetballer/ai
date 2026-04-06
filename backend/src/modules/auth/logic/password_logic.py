@@ -9,7 +9,7 @@ from src.common.utilities.localize import localize
 def request_password_reset(username: str | None, email: str | None) -> None:
     db = get_database()
     query = {"username": username} if username else {"email": email}
-    player = db.players.find_one(query, {"_id": 1, "email": 1, "username": 1})
+    player = db.players.get_one(query, {"_id": 1, "email": 1, "username": 1})
     if player is None:
         return
     token = create_password_reset_token(player["_id"])

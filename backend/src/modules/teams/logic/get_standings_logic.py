@@ -25,7 +25,7 @@ def get_standings(player_id: str) -> dict | None:
     db = get_database()
 
     try:
-        player_doc = db.players.find_one({"_id": ObjectId(player_id)}, PLAYER_TEAM_PROJECTION)
+        player_doc = db.players.get_one({"_id": ObjectId(player_id)}, PLAYER_TEAM_PROJECTION)
     except Exception:
         return None
     if player_doc is None:
@@ -36,7 +36,7 @@ def get_standings(player_id: str) -> dict | None:
         return None
 
     try:
-        team_doc = db.teams.find_one({"_id": ObjectId(player.team_id)}, TEAM_FIELDS_PROJECTION)
+        team_doc = db.teams.get_one({"_id": ObjectId(player.team_id)}, TEAM_FIELDS_PROJECTION)
     except Exception:
         return None
     if team_doc is None:
@@ -50,20 +50,20 @@ def get_standings(player_id: str) -> dict | None:
         return None
 
     cutoff = Team.active_cutoff()
-    team_docs = list(db.teams.find(
+    team_docs = db.teams.get_many(
         {"court_id": own_team.court_id, "last_activity": {"$gte": cutoff}},
         TEAM_FIELDS_PROJECTION,
-    ))
+    )
     teams = [Team.from_doc(doc) for doc in team_docs]
     team_ids = [t.id for t in teams]
 
-    player_docs = list(db.players.find({"team_id": {"$in": team_ids}}, PUBLIC_PLAYER_PROJECTION))
+    player_docs = db.players.get_many({"team_id": {"$in": team_ids}}, PUBLIC_PLAYER_PROJECTION)
     players = [public_player(Player.from_doc(p)) for p in player_docs]
 
-    score_docs = list(db.scores.find(
+    score_docs = db.scores.get_many(
         {"teams": {"$elemMatch": {"$in": team_ids}}, "confirmed": True},
         SCORE_FIELDS_PROJECTION,
-    ))
+    )
     scores = [Score.from_doc(doc) for doc in score_docs]
 
     teams.sort(key=lambda t: _total_points(t.id, scores), reverse=True)

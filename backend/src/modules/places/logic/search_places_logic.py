@@ -23,7 +23,7 @@ def search_places(text: str | None, lon: float | None, lat: float | None) -> lis
     has_location = lon is not None and lat is not None
 
     if has_text:
-        docs = list(db.places.find({"$text": {"$search": text}}, PLACE_FIELDS_PROJECTION).limit(SEARCH_LIMIT))
+        docs = db.places.get_many({"$text": {"$search": text}}, PLACE_FIELDS_PROJECTION, limit=SEARCH_LIMIT)
         places = [Place.from_doc(doc) for doc in docs]
 
         if has_location:
@@ -36,10 +36,11 @@ def search_places(text: str | None, lon: float | None, lat: float | None) -> lis
             places.sort(key=sort_key)
     else:
         radius_radians = SEARCH_RADIUS_METERS / EARTH_RADIUS_METERS
-        docs = list(db.places.find(
+        docs = db.places.get_many(
             {"geolocation": {"$geoWithin": {"$centerSphere": [[lon, lat], radius_radians]}}},
             PLACE_FIELDS_PROJECTION,
-        ).limit(SEARCH_LIMIT))
+            limit=SEARCH_LIMIT,
+        )
         places = [Place.from_doc(doc) for doc in docs]
 
     return [serialize_place(p) for p in places]

@@ -17,7 +17,7 @@ TEAM_PLAYERS_PROJECTION = {"_id": 1, "rating": 1, "team_id": 1}
 
 
 def _get_both_team_players(db, team_id_a: str, team_id_b: str) -> tuple[list[Player], list[Player]]:
-    docs = list(db.players.find({"team_id": {"$in": [team_id_a, team_id_b]}}, TEAM_PLAYERS_PROJECTION))
+    docs = db.players.get_many({"team_id": {"$in": [team_id_a, team_id_b]}}, TEAM_PLAYERS_PROJECTION)
     players_a = [Player.from_doc(d) for d in docs if d.get("team_id") == team_id_a]
     players_b = [Player.from_doc(d) for d in docs if d.get("team_id") == team_id_b]
     return players_a, players_b
@@ -44,10 +44,10 @@ def submit_score(
     db = get_database()
 
     try:
-        player_docs = list(db.players.find(
+        player_docs = db.players.get_many(
             {"_id": {"$in": [ObjectId(player_id), ObjectId(opponent_id)]}},
             PLAYER_INFO_PROJECTION,
-        ))
+        )
     except Exception:
         return "player_not_found", None
 
@@ -104,7 +104,7 @@ def submit_score(
     court_id = team_a.court_id
     if court_id:
         try:
-            court_doc = db.courts.find_one({"_id": ObjectId(court_id)}, COURT_PLACES_PROJECTION)
+            court_doc = db.courts.get_one({"_id": ObjectId(court_id)}, COURT_PLACES_PROJECTION)
         except Exception:
             court_doc = None
         if court_doc is not None:
@@ -137,7 +137,6 @@ def submit_score(
         {"$set": {"last_activity": now}},
     )
 
-    result = db.scores.insert_one(score.to_doc())
-    score.id = str(result.inserted_id)
+    score.id = db.scores.insert_one(score.to_doc())
 
     return None, serialize_score(score)

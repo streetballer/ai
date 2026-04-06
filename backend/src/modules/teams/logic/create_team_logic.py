@@ -15,7 +15,7 @@ NEAREST_COURT_PROJECTION = {"_id": 1, "geolocation": 1}
 
 
 def _find_nearest_court(db, lon: float, lat: float) -> Court | None:
-    doc = db.courts.find_one(
+    doc = db.courts.get_one(
         {
             "geolocation": {
                 "$nearSphere": {
@@ -33,7 +33,7 @@ def create_team(current_player_id: str, target_player_id: str) -> tuple[str | No
     db = get_database()
 
     try:
-        docs = list(db.players.find(
+        docs = list(db.players.get_many(
             {"_id": {"$in": [ObjectId(current_player_id), ObjectId(target_player_id)]}},
             PLAYER_TEAM_PROJECTION,
         ))
@@ -67,8 +67,7 @@ def create_team(current_player_id: str, target_player_id: str) -> tuple[str | No
 
     now = datetime.now(timezone.utc)
     team = Team(color=generate_color(), geolocation=geolocation, court_id=court_id, last_activity=now)
-    result = db.teams.insert_one(team.to_doc())
-    team.id = str(result.inserted_id)
+    team.id = db.teams.insert_one(team.to_doc())
 
     db.players.update_many(
         {"_id": {"$in": [current_doc["_id"], target_doc["_id"]]}},

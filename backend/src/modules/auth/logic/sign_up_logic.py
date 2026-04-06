@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
 from bson import ObjectId
-from pymongo.errors import DuplicateKeyError
-from src.common.libraries.database import get_database
+from src.common.libraries.database import get_database, DuplicateEntryError
 from src.common.libraries.hash import hash_value
 from src.common.libraries.jwt import create_access_token, create_refresh_token
 from src.common.models.player import Player
@@ -23,8 +22,8 @@ def create_player(username: str, email: str, password: str) -> tuple[str | None,
     db = get_database()
     try:
         db.players.insert_one(player.to_doc())
-    except DuplicateKeyError as exc:
-        if "username" in exc.details.get("keyPattern", {}):
+    except DuplicateEntryError as exc:
+        if exc.key == "username":
             return "username_taken", None
         return "email_taken", None
     return None, AuthTokens(player_id=player_id, access_token=access_token, refresh_token=refresh_token)

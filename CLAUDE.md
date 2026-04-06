@@ -178,11 +178,11 @@ At the end of every session, update "Project Status", "Commands", and "Notes" au
 
 ### Project Status
 
-| Task             | Comments                                        |
-| ---------------- | ----------------------------------------------- |
-| Last Task        | Scores module endpoints (5 endpoints, 27 tests) |
-| Next Task        | Build league module endpoint                    |
-| Blocking Factors |                                                 |
+| Task             | Comments                                          |
+| ---------------- | ------------------------------------------------- |
+| Last Task        | Provider-agnostic DB wrapper + 145 tests passing  |
+| Next Task        | Build league module endpoint                      |
+| Blocking Factors |                                                   |
 
 ### Commands
 
@@ -204,4 +204,5 @@ At the end of every session, update "Project Status", "Commands", and "Notes" au
 - MongoDB: use text indexes (`$text`) over regex (`$regex`) for text search
 - MongoDB: when text + coordinates are both provided, search by text first then sort results by distance
 - Data models: use dataclasses (`Player`, `Court`, `Game`, `Place`, `Score`) in `src/common/models/`; always call `Model.from_doc(doc)` when reading from DB; always call `model.to_doc()` when inserting to DB
-- DB projections: every `find`/`find_one` call must include an explicit projection dict; default to `{"_id": 1}` for existence checks; define projections as module-level constants near the top of logic files
+- DB projections: every DB read must include an explicit projection dict; default to `{"_id": 1}` for existence checks; define projections as module-level constants near the top of logic files
+- DB wrapper: use `get_one`/`get_many`/`insert_one`/`update_one`/`update_many`/`delete_one` from `src.common.libraries.database`; `insert_one` returns `str`; catch `DuplicateEntryError` (not pymongo's `DuplicateKeyError`)

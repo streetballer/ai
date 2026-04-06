@@ -20,7 +20,7 @@ def edit_team(player_id: str, color: str | None, add_player_ids: list[str] | Non
     db = get_database()
 
     try:
-        player_doc = db.players.find_one({"_id": ObjectId(player_id)}, PLAYER_TEAM_PROJECTION)
+        player_doc = db.players.get_one({"_id": ObjectId(player_id)}, PLAYER_TEAM_PROJECTION)
     except Exception:
         return "not_found"
     if player_doc is None:
@@ -42,16 +42,16 @@ def edit_team(player_id: str, color: str | None, add_player_ids: list[str] | Non
         except Exception:
             candidate_oids = []
 
-        candidate_docs = list(db.players.find(
+        candidate_docs = db.players.get_many(
             {"_id": {"$in": candidate_oids}},
             PLAYER_EXISTS_PROJECTION,
-        ))
+        )
         candidates = [Player.from_doc(d) for d in candidate_docs]
 
         team_ids_to_check = [p.team_id for p in candidates if p.team_id]
         existing_teams: dict[str, dict] = {}
         if team_ids_to_check:
-            for tdoc in db.teams.find(
+            for tdoc in db.teams.get_many(
                 {"_id": {"$in": [ObjectId(tid) for tid in team_ids_to_check]}},
                 TEAM_EXISTS_PROJECTION,
             ):
@@ -77,7 +77,7 @@ def edit_team(player_id: str, color: str | None, add_player_ids: list[str] | Non
                 continue
             db.players.update_one({"_id": oid, "team_id": team.id}, {"$set": {"team_id": ""}})
 
-        remaining = list(db.players.find({"team_id": team.id}, {"_id": 1}))
+        remaining = db.players.get_many({"team_id": team.id}, {"_id": 1})
         if len(remaining) < TEAM_MIN_PLAYERS:
             _delete_team(db, team.id)
         else:

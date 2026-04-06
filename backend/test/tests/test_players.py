@@ -29,17 +29,11 @@ PLAYER_DOC = {
 }
 
 
-def _make_cursor(docs: list) -> MagicMock:
-    cursor = MagicMock()
-    cursor.limit.return_value = docs
-    return cursor
-
-
 # --- GET /players ---
 
 def test_search_players_by_location_returns_200():
     mock_db = MagicMock()
-    mock_db.players.find.return_value = _make_cursor([PLAYER_DOC])
+    mock_db.players.get_many.return_value = [PLAYER_DOC]
     with patch("src.modules.players.logic.search_players_logic.get_database", return_value=mock_db):
         response = client.get("/players", params={"lon": -118.25, "lat": 34.05})
     assert response.status_code == 200
@@ -48,7 +42,7 @@ def test_search_players_by_location_returns_200():
 
 def test_search_players_by_text_returns_200():
     mock_db = MagicMock()
-    mock_db.players.find.return_value = _make_cursor([PLAYER_DOC])
+    mock_db.players.get_many.return_value = [PLAYER_DOC]
     with patch("src.modules.players.logic.search_players_logic.get_database", return_value=mock_db):
         response = client.get("/players", params={"text": "street"})
     assert response.status_code == 200
@@ -57,7 +51,7 @@ def test_search_players_by_text_returns_200():
 
 def test_search_players_returns_public_fields_only():
     mock_db = MagicMock()
-    mock_db.players.find.return_value = _make_cursor([PLAYER_DOC])
+    mock_db.players.get_many.return_value = [PLAYER_DOC]
     with patch("src.modules.players.logic.search_players_logic.get_database", return_value=mock_db):
         response = client.get("/players", params={"text": "street"})
     player = response.json()["data"]["players"][0]
@@ -87,7 +81,7 @@ def test_search_players_returns_422_with_only_lon():
 
 def test_get_own_player_returns_200():
     mock_db = MagicMock()
-    mock_db.players.find_one.return_value = PLAYER_DOC
+    mock_db.players.get_one.return_value = PLAYER_DOC
     with patch("src.modules.players.logic.get_player_logic.get_database", return_value=mock_db):
         response = client.get("/players/player", headers=AUTH_HEADERS)
     assert response.status_code == 200
@@ -96,7 +90,7 @@ def test_get_own_player_returns_200():
 
 def test_get_own_player_returns_private_fields():
     mock_db = MagicMock()
-    mock_db.players.find_one.return_value = PLAYER_DOC
+    mock_db.players.get_one.return_value = PLAYER_DOC
     with patch("src.modules.players.logic.get_player_logic.get_database", return_value=mock_db):
         response = client.get("/players/player", headers=AUTH_HEADERS)
     player = response.json()["data"]["player"]
@@ -118,7 +112,7 @@ def test_get_own_player_returns_401_without_auth():
 
 def test_get_own_player_returns_404_when_not_found():
     mock_db = MagicMock()
-    mock_db.players.find_one.return_value = None
+    mock_db.players.get_one.return_value = None
     with patch("src.modules.players.logic.get_player_logic.get_database", return_value=mock_db):
         response = client.get("/players/player", headers=AUTH_HEADERS)
     assert response.status_code == 404
@@ -128,7 +122,7 @@ def test_get_own_player_returns_404_when_not_found():
 
 def test_get_player_returns_200():
     mock_db = MagicMock()
-    mock_db.players.find_one.return_value = PLAYER_DOC
+    mock_db.players.get_one.return_value = PLAYER_DOC
     with patch("src.modules.players.logic.get_player_logic.get_database", return_value=mock_db):
         response = client.get(f"/players/{PLAYER_ID}")
     assert response.status_code == 200
@@ -137,7 +131,7 @@ def test_get_player_returns_200():
 
 def test_get_player_returns_public_fields_only():
     mock_db = MagicMock()
-    mock_db.players.find_one.return_value = PLAYER_DOC
+    mock_db.players.get_one.return_value = PLAYER_DOC
     with patch("src.modules.players.logic.get_player_logic.get_database", return_value=mock_db):
         response = client.get(f"/players/{PLAYER_ID}")
     player = response.json()["data"]["player"]
@@ -154,7 +148,7 @@ def test_get_player_returns_public_fields_only():
 
 def test_get_player_returns_404_when_not_found():
     mock_db = MagicMock()
-    mock_db.players.find_one.return_value = None
+    mock_db.players.get_one.return_value = None
     with patch("src.modules.players.logic.get_player_logic.get_database", return_value=mock_db):
         response = client.get(f"/players/{PLAYER_ID}")
     assert response.status_code == 404
@@ -193,8 +187,8 @@ def _make_teammate_score(team_wins: bool) -> dict:
 
 def test_get_record_returns_200():
     mock_db = MagicMock()
-    mock_db.players.find_one.return_value = {"_id": ObjectId(OTHER_PLAYER_ID)}
-    mock_db.scores.find.return_value = [_make_opponent_score(True)]
+    mock_db.players.get_one.return_value = {"_id": ObjectId(OTHER_PLAYER_ID)}
+    mock_db.scores.get_many.return_value = [_make_opponent_score(True)]
     with patch("src.modules.players.logic.get_record_logic.get_database", return_value=mock_db):
         response = client.get(f"/players/{OTHER_PLAYER_ID}/record", headers=AUTH_HEADERS)
     assert response.status_code == 200
@@ -205,8 +199,8 @@ def test_get_record_returns_200():
 
 def test_get_record_counts_opponent_wins_and_losses():
     mock_db = MagicMock()
-    mock_db.players.find_one.return_value = {"_id": ObjectId(OTHER_PLAYER_ID)}
-    mock_db.scores.find.return_value = [
+    mock_db.players.get_one.return_value = {"_id": ObjectId(OTHER_PLAYER_ID)}
+    mock_db.scores.get_many.return_value = [
         _make_opponent_score(True),
         _make_opponent_score(True),
         _make_opponent_score(False),
@@ -222,8 +216,8 @@ def test_get_record_counts_opponent_wins_and_losses():
 
 def test_get_record_counts_teammate_wins_and_losses():
     mock_db = MagicMock()
-    mock_db.players.find_one.return_value = {"_id": ObjectId(OTHER_PLAYER_ID)}
-    mock_db.scores.find.return_value = [
+    mock_db.players.get_one.return_value = {"_id": ObjectId(OTHER_PLAYER_ID)}
+    mock_db.scores.get_many.return_value = [
         _make_teammate_score(True),
         _make_teammate_score(False),
         _make_teammate_score(False),
@@ -239,7 +233,7 @@ def test_get_record_counts_teammate_wins_and_losses():
 
 def test_get_record_returns_404_when_player_not_found():
     mock_db = MagicMock()
-    mock_db.players.find_one.return_value = None
+    mock_db.players.get_one.return_value = None
     with patch("src.modules.players.logic.get_record_logic.get_database", return_value=mock_db):
         response = client.get(f"/players/{OTHER_PLAYER_ID}/record", headers=AUTH_HEADERS)
     assert response.status_code == 404

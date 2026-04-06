@@ -14,13 +14,13 @@ def get_record_with_player(current_player_id: str, target_player_id: str) -> Rec
     except Exception:
         return None
 
-    if db.players.find_one({"_id": target_oid}, PLAYER_EXISTS_PROJECTION) is None:
+    if db.players.get_one({"_id": target_oid}, PLAYER_EXISTS_PROJECTION) is None:
         return None
 
-    score_docs = list(db.scores.find(
+    score_docs = db.scores.get_many(
         {"player_ids": {"$all": [current_player_id, target_player_id]}, "confirmed": True},
         SCORE_FIELDS_PROJECTION,
-    ))
+    )
     scores = [Score.from_doc(doc) for doc in score_docs]
 
     team_won = 0

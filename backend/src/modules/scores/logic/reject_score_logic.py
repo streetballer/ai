@@ -21,7 +21,7 @@ def _side_rejected(player_ids: list[str], rejections: list[str]) -> bool:
 def reject_score(score_id: str, player_id: str) -> str | None:
     db = get_database()
     try:
-        doc = db.scores.find_one({"_id": ObjectId(score_id)}, SCORE_REJECT_PROJECTION)
+        doc = db.scores.get_one({"_id": ObjectId(score_id)}, SCORE_REJECT_PROJECTION)
     except Exception:
         return None
     if doc is None:

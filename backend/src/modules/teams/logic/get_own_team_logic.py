@@ -12,7 +12,7 @@ PUBLIC_PLAYER_PROJECTION = {"_id": 1, "username": 1, "language": 1, "team_id": 1
 def get_own_team(player_id: str) -> dict | None:
     db = get_database()
     try:
-        player_doc = db.players.find_one({"_id": ObjectId(player_id)}, PLAYER_TEAM_PROJECTION)
+        player_doc = db.players.get_one({"_id": ObjectId(player_id)}, PLAYER_TEAM_PROJECTION)
     except Exception:
         return None
     if player_doc is None:
@@ -23,7 +23,7 @@ def get_own_team(player_id: str) -> dict | None:
         return None
 
     try:
-        team_doc = db.teams.find_one({"_id": ObjectId(player.team_id)}, TEAM_FIELDS_PROJECTION)
+        team_doc = db.teams.get_one({"_id": ObjectId(player.team_id)}, TEAM_FIELDS_PROJECTION)
     except Exception:
         return None
     if team_doc is None:
@@ -35,7 +35,7 @@ def get_own_team(player_id: str) -> dict | None:
         db.players.update_one({"_id": player_doc["_id"]}, {"$set": {"team_id": ""}})
         return None
 
-    player_docs = db.players.find({"team_id": player.team_id}, PUBLIC_PLAYER_PROJECTION)
+    player_docs = db.players.get_many({"team_id": player.team_id}, PUBLIC_PLAYER_PROJECTION)
     players = [public_player(Player.from_doc(p)) for p in player_docs]
 
     return {"team": serialize_team(team), "players": players}

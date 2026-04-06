@@ -10,7 +10,7 @@ COURT_FIELDS_PROJECTION = {"_id": 1, "name": 1, "geolocation": 1, "place_ids": 1
 def search_courts_by_location(lon: float, lat: float, radius: float = DEFAULT_RADIUS_METERS) -> list[dict]:
     db = get_database()
     radius_radians = radius / EARTH_RADIUS_METERS
-    docs = db.courts.find(
+    docs = db.courts.get_many(
         {"geolocation": {"$geoWithin": {"$centerSphere": [[lon, lat], radius_radians]}}},
         COURT_FIELDS_PROJECTION,
     )

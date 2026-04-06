@@ -9,7 +9,7 @@ PLAYER_TOKEN_PROJECTION = {"_id": 1, "refresh_token_hash": 1}
 
 def rotate_tokens(player_id: str, refresh_token: str) -> AuthTokens | None:
     db = get_database()
-    doc = db.players.find_one({"_id": player_id}, PLAYER_TOKEN_PROJECTION)
+    doc = db.players.get_one({"_id": player_id}, PLAYER_TOKEN_PROJECTION)
     if doc is None:
         return None
     player = Player.from_doc(doc)

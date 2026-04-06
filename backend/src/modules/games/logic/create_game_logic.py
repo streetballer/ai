@@ -14,7 +14,7 @@ def _floor_to_hour(dt: datetime) -> datetime:
 def create_or_join_game(court_id: str, timestamp: datetime, player_id: str) -> bool:
     db = get_database()
     try:
-        court_doc = db.courts.find_one({"_id": ObjectId(court_id)}, COURT_EXISTS_PROJECTION)
+        court_doc = db.courts.get_one({"_id": ObjectId(court_id)}, COURT_EXISTS_PROJECTION)
     except Exception:
         return False
 
@@ -23,7 +23,7 @@ def create_or_join_game(court_id: str, timestamp: datetime, player_id: str) -> b
 
     game_time = _floor_to_hour(timestamp.astimezone(timezone.utc))
 
-    existing_doc = db.games.find_one({"court_id": court_id, "timestamp": game_time}, GAME_EXISTS_PROJECTION)
+    existing_doc = db.games.get_one({"court_id": court_id, "timestamp": game_time}, GAME_EXISTS_PROJECTION)
     if existing_doc is not None:
         existing = Game.from_doc(existing_doc)
         db.games.update_one(

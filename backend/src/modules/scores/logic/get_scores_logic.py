@@ -21,5 +21,5 @@ def get_scores(player_id: str, confirmed: bool | None) -> list[dict]:
     query: dict = {"player_ids": player_id}
     if confirmed is not None:
         query["confirmed"] = confirmed
-    docs = list(db.scores.find(query, SCORE_FIELDS_PROJECTION))
+    docs = db.scores.get_many(query, SCORE_FIELDS_PROJECTION)
     return [serialize_score(Score.from_doc(doc)) for doc in docs]

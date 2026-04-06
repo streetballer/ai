@@ -1,5 +1,6 @@
+from bson import ObjectId
 from unittest.mock import MagicMock, patch
-from pymongo.errors import DuplicateKeyError
+from src.common.libraries.database import DuplicateEntryError
 from fastapi.testclient import TestClient
 from src.main import app
 
@@ -10,15 +11,13 @@ VALID_BODY = {"username": "streetballer", "email": "player@example.com", "passwo
 
 def mock_db_insert_success() -> MagicMock:
     db = MagicMock()
-    db.players.insert_one.return_value = MagicMock()
+    db.players.insert_one.return_value = str(ObjectId())
     return db
 
 
 def mock_db_insert_duplicate(field: str) -> MagicMock:
     db = MagicMock()
-    db.players.insert_one.side_effect = DuplicateKeyError(
-        "", details={"keyPattern": {field: 1}}
-    )
+    db.players.insert_one.side_effect = DuplicateEntryError(field)
     return db
 
 

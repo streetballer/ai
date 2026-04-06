@@ -13,7 +13,7 @@ COURT_EXISTS_PROJECTION = {"_id": 1}
 
 
 def _lookup_place_ids(db, lon: float, lat: float) -> list[str]:
-    doc = db.places.find_one(
+    doc = db.places.get_one(
         {
             "is_parent": False,
             "geolocation": {
@@ -35,7 +35,7 @@ def add_court(lon: float, lat: float, name: str) -> dict | None:
     db = get_database()
 
     radius_radians = DUPLICATE_RADIUS_METERS / EARTH_RADIUS_METERS
-    existing = db.courts.find_one(
+    existing = db.courts.get_one(
         {"geolocation": {"$geoWithin": {"$centerSphere": [[lon, lat], radius_radians]}}},
         COURT_EXISTS_PROJECTION,
     )
@@ -45,6 +45,5 @@ def add_court(lon: float, lat: float, name: str) -> dict | None:
     place_ids = _lookup_place_ids(db, lon, lat)
     geolocation = {"type": "Point", "coordinates": [lon, lat]}
     court = Court(name=name, geolocation=geolocation, place_ids=place_ids)
-    result = db.courts.insert_one(court.to_doc())
-    court.id = str(result.inserted_id)
+    court.id = db.courts.insert_one(court.to_doc())
     return serialize_court(court)

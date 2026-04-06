@@ -22,7 +22,7 @@ def _side_confirmed(player_ids: list[str], confirmations: list[str]) -> bool:
 def confirm_score(score_id: str, player_id: str) -> str | None:
     db = get_database()
     try:
-        doc = db.scores.find_one({"_id": ObjectId(score_id)}, SCORE_CONFIRM_PROJECTION)
+        doc = db.scores.get_one({"_id": ObjectId(score_id)}, SCORE_CONFIRM_PROJECTION)
     except Exception:
         return None
     if doc is None:

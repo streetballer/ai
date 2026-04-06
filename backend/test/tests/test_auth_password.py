@@ -15,13 +15,13 @@ def make_token(player_id: str, token_type: str, expired: bool = False) -> str:
 
 def mock_db_with_player(player_id: str) -> MagicMock:
     db = MagicMock()
-    db.players.find_one.return_value = {"_id": player_id, "email": "player@example.com", "username": "streetballer"}
+    db.players.get_one.return_value = {"_id": player_id, "email": "player@example.com", "username": "streetballer"}
     return db
 
 
 def mock_db_no_player() -> MagicMock:
     db = MagicMock()
-    db.players.find_one.return_value = None
+    db.players.get_one.return_value = None
     return db
 
 

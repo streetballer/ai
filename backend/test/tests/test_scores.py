@@ -80,7 +80,7 @@ PUBLIC_PLAYER_DOC = {
 
 def test_get_scores_returns_200():
     mock_db = MagicMock()
-    mock_db.scores.find.return_value = [SCORE_DOC]
+    mock_db.scores.get_many.return_value = [SCORE_DOC]
     with patch("src.modules.scores.logic.get_scores_logic.get_database", return_value=mock_db):
         response = client.get("/scores", params={"player_id": PLAYER_ID}, headers=AUTH_HEADERS)
     assert response.status_code == 200
@@ -89,7 +89,7 @@ def test_get_scores_returns_200():
 
 def test_get_scores_returns_empty_list_when_no_scores():
     mock_db = MagicMock()
-    mock_db.scores.find.return_value = []
+    mock_db.scores.get_many.return_value = []
     with patch("src.modules.scores.logic.get_scores_logic.get_database", return_value=mock_db):
         response = client.get("/scores", params={"player_id": PLAYER_ID}, headers=AUTH_HEADERS)
     assert response.status_code == 200
@@ -98,11 +98,11 @@ def test_get_scores_returns_empty_list_when_no_scores():
 
 def test_get_scores_filters_by_confirmed():
     mock_db = MagicMock()
-    mock_db.scores.find.return_value = []
+    mock_db.scores.get_many.return_value = []
     with patch("src.modules.scores.logic.get_scores_logic.get_database", return_value=mock_db):
         response = client.get("/scores", params={"player_id": PLAYER_ID, "confirmed": True}, headers=AUTH_HEADERS)
     assert response.status_code == 200
-    call_args = mock_db.scores.find.call_args
+    call_args = mock_db.scores.get_many.call_args
     assert call_args[0][0].get("confirmed") is True
 
 
@@ -120,13 +120,13 @@ def test_get_scores_returns_422_without_player_id():
 
 def test_submit_score_returns_200():
     mock_db = MagicMock()
-    mock_db.players.find.side_effect = [
+    mock_db.players.get_many.side_effect = [
         [PLAYER_DOC, OPPONENT_DOC],
         [PLAYER_DOC, OPPONENT_DOC],
     ]
-    mock_db.teams.find_one.side_effect = [TEAM_A_DOC, TEAM_B_DOC]
-    mock_db.courts.find_one.return_value = COURT_DOC
-    mock_db.scores.insert_one.return_value = MagicMock(inserted_id=ObjectId(SCORE_ID))
+    mock_db.teams.get_one.side_effect = [TEAM_A_DOC, TEAM_B_DOC]
+    mock_db.courts.get_one.return_value = COURT_DOC
+    mock_db.scores.insert_one.return_value = SCORE_ID
     with patch("src.modules.scores.logic.submit_score_logic.get_database", return_value=mock_db):
         response = client.post(
             "/scores",
@@ -162,8 +162,8 @@ def test_submit_score_returns_422_when_score_out_of_range():
 
 def test_submit_score_returns_422_when_player_has_no_active_team():
     mock_db = MagicMock()
-    mock_db.players.find.return_value = [{**PLAYER_DOC, "team_id": ""}]
-    mock_db.teams.find_one.return_value = None
+    mock_db.players.get_many.return_value = [{**PLAYER_DOC, "team_id": ""}]
+    mock_db.teams.get_one.return_value = None
     with patch("src.modules.scores.logic.submit_score_logic.get_database", return_value=mock_db):
         response = client.post(
             "/scores",
@@ -175,8 +175,8 @@ def test_submit_score_returns_422_when_player_has_no_active_team():
 
 def test_submit_score_returns_422_when_opponent_not_found():
     mock_db = MagicMock()
-    mock_db.players.find.return_value = [PLAYER_DOC]
-    mock_db.teams.find_one.return_value = TEAM_A_DOC
+    mock_db.players.get_many.return_value = [PLAYER_DOC]
+    mock_db.teams.get_one.return_value = TEAM_A_DOC
     with patch("src.modules.scores.logic.submit_score_logic.get_database", return_value=mock_db):
         response = client.post(
             "/scores",
@@ -188,8 +188,8 @@ def test_submit_score_returns_422_when_opponent_not_found():
 
 def test_submit_score_returns_422_when_opponent_has_no_active_team():
     mock_db = MagicMock()
-    mock_db.players.find.return_value = [PLAYER_DOC, {**OPPONENT_DOC, "team_id": ""}]
-    mock_db.teams.find_one.side_effect = [TEAM_A_DOC, None]
+    mock_db.players.get_many.return_value = [PLAYER_DOC, {**OPPONENT_DOC, "team_id": ""}]
+    mock_db.teams.get_one.side_effect = [TEAM_A_DOC, None]
     with patch("src.modules.scores.logic.submit_score_logic.get_database", return_value=mock_db):
         response = client.post(
             "/scores",
@@ -201,11 +201,11 @@ def test_submit_score_returns_422_when_opponent_has_no_active_team():
 
 def test_submit_score_returns_422_when_same_team():
     mock_db = MagicMock()
-    mock_db.players.find.return_value = [
+    mock_db.players.get_many.return_value = [
         {**PLAYER_DOC, "team_id": TEAM_A_ID},
         {**OPPONENT_DOC, "team_id": TEAM_A_ID},
     ]
-    mock_db.teams.find_one.side_effect = [TEAM_A_DOC, TEAM_A_DOC]
+    mock_db.teams.get_one.side_effect = [TEAM_A_DOC, TEAM_A_DOC]
     with patch("src.modules.scores.logic.submit_score_logic.get_database", return_value=mock_db):
         response = client.post(
             "/scores",
@@ -219,13 +219,13 @@ def test_submit_score_updates_ratings_when_winner_avg_leq_loser_avg():
     mock_db = MagicMock()
     weaker_player = {**PLAYER_DOC, "rating": 3}
     stronger_opponent = {**OPPONENT_DOC, "rating": 7}
-    mock_db.players.find.side_effect = [
+    mock_db.players.get_many.side_effect = [
         [weaker_player, stronger_opponent],
         [weaker_player, stronger_opponent],
     ]
-    mock_db.teams.find_one.side_effect = [TEAM_A_DOC, TEAM_B_DOC]
-    mock_db.courts.find_one.return_value = COURT_DOC
-    mock_db.scores.insert_one.return_value = MagicMock(inserted_id=ObjectId(SCORE_ID))
+    mock_db.teams.get_one.side_effect = [TEAM_A_DOC, TEAM_B_DOC]
+    mock_db.courts.get_one.return_value = COURT_DOC
+    mock_db.scores.insert_one.return_value = SCORE_ID
     with patch("src.modules.scores.logic.submit_score_logic.get_database", return_value=mock_db):
         response = client.post(
             "/scores",
@@ -240,13 +240,13 @@ def test_submit_score_skips_rating_update_when_winner_has_higher_avg():
     mock_db = MagicMock()
     stronger_player = {**PLAYER_DOC, "rating": 7}
     weaker_opponent = {**OPPONENT_DOC, "rating": 3}
-    mock_db.players.find.side_effect = [
+    mock_db.players.get_many.side_effect = [
         [stronger_player, weaker_opponent],
         [stronger_player, weaker_opponent],
     ]
-    mock_db.teams.find_one.side_effect = [TEAM_A_DOC, TEAM_B_DOC]
-    mock_db.courts.find_one.return_value = COURT_DOC
-    mock_db.scores.insert_one.return_value = MagicMock(inserted_id=ObjectId(SCORE_ID))
+    mock_db.teams.get_one.side_effect = [TEAM_A_DOC, TEAM_B_DOC]
+    mock_db.courts.get_one.return_value = COURT_DOC
+    mock_db.scores.insert_one.return_value = SCORE_ID
     with patch("src.modules.scores.logic.submit_score_logic.get_database", return_value=mock_db):
         response = client.post(
             "/scores",
@@ -261,8 +261,8 @@ def test_submit_score_skips_rating_update_when_winner_has_higher_avg():
 
 def test_get_score_returns_200():
     mock_db = MagicMock()
-    mock_db.scores.find_one.return_value = SCORE_DOC
-    mock_db.players.find.return_value = [PUBLIC_PLAYER_DOC]
+    mock_db.scores.get_one.return_value = SCORE_DOC
+    mock_db.players.get_many.return_value = [PUBLIC_PLAYER_DOC]
     with patch("src.modules.scores.logic.get_score_logic.get_database", return_value=mock_db):
         response = client.get(f"/scores/{SCORE_ID}")
     assert response.status_code == 200
@@ -273,7 +273,7 @@ def test_get_score_returns_200():
 
 def test_get_score_returns_404_when_not_found():
     mock_db = MagicMock()
-    mock_db.scores.find_one.return_value = None
+    mock_db.scores.get_one.return_value = None
     with patch("src.modules.scores.logic.get_score_logic.get_database", return_value=mock_db):
         response = client.get(f"/scores/{SCORE_ID}")
     assert response.status_code == 404
@@ -283,7 +283,7 @@ def test_get_score_returns_404_when_not_found():
 
 def test_confirm_score_returns_200():
     mock_db = MagicMock()
-    mock_db.scores.find_one.return_value = {
+    mock_db.scores.get_one.return_value = {
         **SCORE_DOC,
         "confirmations": [],
         "player_ids": [PLAYER_ID, OTHER_PLAYER_ID],
@@ -301,7 +301,7 @@ def test_confirm_score_returns_401_without_auth():
 
 def test_confirm_score_returns_403_when_not_in_score():
     mock_db = MagicMock()
-    mock_db.scores.find_one.return_value = {
+    mock_db.scores.get_one.return_value = {
         **SCORE_DOC,
         "player_ids": [OTHER_PLAYER_ID],
     }
@@ -312,7 +312,7 @@ def test_confirm_score_returns_403_when_not_in_score():
 
 def test_confirm_score_returns_404_when_not_found():
     mock_db = MagicMock()
-    mock_db.scores.find_one.return_value = None
+    mock_db.scores.get_one.return_value = None
     with patch("src.modules.scores.logic.confirm_score_logic.get_database", return_value=mock_db):
         response = client.post(f"/scores/{SCORE_ID}/confirm", headers=AUTH_HEADERS)
     assert response.status_code == 404
@@ -320,7 +320,7 @@ def test_confirm_score_returns_404_when_not_found():
 
 def test_confirm_score_sets_confirmed_when_both_sides_confirmed():
     mock_db = MagicMock()
-    mock_db.scores.find_one.return_value = {
+    mock_db.scores.get_one.return_value = {
         **SCORE_DOC,
         "players": [[PLAYER_ID], [OTHER_PLAYER_ID]],
         "confirmations": [OTHER_PLAYER_ID],
@@ -338,7 +338,7 @@ def test_confirm_score_sets_confirmed_when_both_sides_confirmed():
 
 def test_reject_score_returns_200():
     mock_db = MagicMock()
-    mock_db.scores.find_one.return_value = {
+    mock_db.scores.get_one.return_value = {
         **SCORE_DOC,
         "rejections": [],
         "confirmations": [],
@@ -358,7 +358,7 @@ def test_reject_score_returns_401_without_auth():
 
 def test_reject_score_returns_403_when_not_in_score():
     mock_db = MagicMock()
-    mock_db.scores.find_one.return_value = {
+    mock_db.scores.get_one.return_value = {
         **SCORE_DOC,
         "player_ids": [OTHER_PLAYER_ID],
     }
@@ -369,7 +369,7 @@ def test_reject_score_returns_403_when_not_in_score():
 
 def test_reject_score_returns_404_when_not_found():
     mock_db = MagicMock()
-    mock_db.scores.find_one.return_value = None
+    mock_db.scores.get_one.return_value = None
     with patch("src.modules.scores.logic.reject_score_logic.get_database", return_value=mock_db):
         response = client.post(f"/scores/{SCORE_ID}/reject", headers=AUTH_HEADERS)
     assert response.status_code == 404
@@ -377,7 +377,7 @@ def test_reject_score_returns_404_when_not_found():
 
 def test_reject_score_deletes_when_majority_of_side_rejects():
     mock_db = MagicMock()
-    mock_db.scores.find_one.return_value = {
+    mock_db.scores.get_one.return_value = {
         **SCORE_DOC,
         "players": [[PLAYER_ID], [OTHER_PLAYER_ID]],
         "rejections": [],

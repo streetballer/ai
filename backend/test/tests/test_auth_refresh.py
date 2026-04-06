@@ -18,7 +18,7 @@ def make_token(player_id: str, token_type: str, expired: bool = False) -> str:
 
 def mock_db_with_player(player_id: str, refresh_token: str) -> MagicMock:
     db = MagicMock()
-    db.players.find_one.return_value = {
+    db.players.get_one.return_value = {
         "_id": player_id,
         "refresh_token_hash": hash_value(refresh_token),
     }
@@ -72,7 +72,7 @@ def test_refresh_returns_498_for_hash_mismatch():
 def test_refresh_returns_498_for_unknown_player():
     token = make_token("player_unknown", "refresh")
     mock_db = MagicMock()
-    mock_db.players.find_one.return_value = None
+    mock_db.players.get_one.return_value = None
     with patch("src.modules.auth.logic.token_logic.get_database", return_value=mock_db):
         response = client.post(f"/auth/refresh/{token}")
     assert response.status_code == 498

@@ -10,7 +10,7 @@ PLAYER_AUTH_PROJECTION = {"_id": 1, "password_hash": 1, "refresh_token_hash": 1}
 def authenticate_player(password: str, username: str | None, email: str | None) -> AuthTokens | None:
     db = get_database()
     query = {"username": username} if username else {"email": email}
-    doc = db.players.find_one(query, PLAYER_AUTH_PROJECTION)
+    doc = db.players.get_one(query, PLAYER_AUTH_PROJECTION)
     if doc is None:
         return None
     player = Player.from_doc(doc)

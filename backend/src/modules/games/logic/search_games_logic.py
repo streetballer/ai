@@ -14,7 +14,7 @@ GAME_FIELDS_PROJECTION = {"_id": 1, "timestamp": 1, "court_id": 1, "player_ids":
 def search_games_by_court(court_id: str) -> dict | None:
     db = get_database()
     try:
-        court_doc = db.courts.find_one({"_id": ObjectId(court_id)}, COURT_FIELDS_PROJECTION)
+        court_doc = db.courts.get_one({"_id": ObjectId(court_id)}, COURT_FIELDS_PROJECTION)
     except Exception:
         return None
     if court_doc is None:
@@ -22,10 +22,10 @@ def search_games_by_court(court_id: str) -> dict | None:
 
     court = Court.from_doc(court_doc)
     now = datetime.now(tz=timezone.utc)
-    game_docs = list(db.games.find(
+    game_docs = db.games.get_many(
         {"court_id": court_id, "timestamp": {"$gte": now}},
         GAME_FIELDS_PROJECTION,
-    ))
+    )
     games = [Game.from_doc(doc) for doc in game_docs]
 
     return {
@@ -37,10 +37,10 @@ def search_games_by_court(court_id: str) -> dict | None:
 def search_games_by_location(lon: float, lat: float) -> dict:
     db = get_database()
     radius_radians = SEARCH_RADIUS_METERS / EARTH_RADIUS_METERS
-    court_docs = list(db.courts.find(
+    court_docs = db.courts.get_many(
         {"geolocation": {"$geoWithin": {"$centerSphere": [[lon, lat], radius_radians]}}},
         COURT_FIELDS_PROJECTION,
-    ))
+    )
 
     if not court_docs:
         return {"games": [], "courts": []}
@@ -48,10 +48,10 @@ def search_games_by_location(lon: float, lat: float) -> dict:
     courts = [Court.from_doc(doc) for doc in court_docs]
     court_ids = [c.id for c in courts]
     now = datetime.now(tz=timezone.utc)
-    game_docs = list(db.games.find(
+    game_docs = db.games.get_many(
         {"court_id": {"$in": court_ids}, "timestamp": {"$gte": now}},
         GAME_FIELDS_PROJECTION,
-    ))
+    )
     games = [Game.from_doc(doc) for doc in game_docs]
 
     courts_by_id = {c.id: c for c in courts}

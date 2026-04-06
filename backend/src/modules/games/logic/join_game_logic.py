@@ -12,7 +12,7 @@ def join_game(game_id: str, player_id: str) -> str | None:
     """
     db = get_database()
     try:
-        doc = db.games.find_one({"_id": ObjectId(game_id)}, GAME_JOIN_PROJECTION)
+        doc = db.games.get_one({"_id": ObjectId(game_id)}, GAME_JOIN_PROJECTION)
     except Exception:
         return None
 

@@ -12,12 +12,6 @@ AUTH_HEADERS = {"Authorization": f"Bearer {create_access_token(PLAYER_ID)}"}
 COURT_ID = str(ObjectId())
 GAME_ID = str(ObjectId())
 
-def _make_cursor(docs: list) -> MagicMock:
-    cursor = MagicMock()
-    cursor.limit.return_value = docs
-    return cursor
-
-
 COURT_DOC = {
     "_id": ObjectId(COURT_ID),
     "name": "Venice Beach Court",
@@ -40,8 +34,8 @@ GAME_DOC = {
 
 def test_search_games_by_court_returns_200():
     mock_db = MagicMock()
-    mock_db.courts.find_one.return_value = COURT_DOC
-    mock_db.games.find.return_value = _make_cursor([GAME_DOC])
+    mock_db.courts.get_one.return_value = COURT_DOC
+    mock_db.games.get_many.return_value = [GAME_DOC]
     with patch("src.modules.games.logic.search_games_logic.get_database", return_value=mock_db):
         response = client.get("/games", params={"court_id": COURT_ID})
     assert response.status_code == 200
@@ -52,7 +46,7 @@ def test_search_games_by_court_returns_200():
 
 def test_search_games_by_court_returns_404_when_court_not_found():
     mock_db = MagicMock()
-    mock_db.courts.find_one.return_value = None
+    mock_db.courts.get_one.return_value = None
     with patch("src.modules.games.logic.search_games_logic.get_database", return_value=mock_db):
         response = client.get("/games", params={"court_id": COURT_ID})
     assert response.status_code == 404
@@ -60,8 +54,8 @@ def test_search_games_by_court_returns_404_when_court_not_found():
 
 def test_search_games_by_location_returns_200():
     mock_db = MagicMock()
-    mock_db.courts.find.return_value = _make_cursor([COURT_DOC])
-    mock_db.games.find.return_value = _make_cursor([GAME_DOC])
+    mock_db.courts.get_many.return_value = [COURT_DOC]
+    mock_db.games.get_many.return_value = [GAME_DOC]
     with patch("src.modules.games.logic.search_games_logic.get_database", return_value=mock_db):
         response = client.get("/games", params={"lon": -118.47, "lat": 33.98})
     assert response.status_code == 200
@@ -81,8 +75,8 @@ def test_search_games_returns_422_with_only_lon():
 
 def test_create_game_returns_200():
     mock_db = MagicMock()
-    mock_db.courts.find_one.return_value = COURT_DOC
-    mock_db.games.find_one.return_value = None
+    mock_db.courts.get_one.return_value = COURT_DOC
+    mock_db.games.get_one.return_value = None
     with patch("src.modules.games.logic.create_game_logic.get_database", return_value=mock_db):
         response = client.post(
             "/games",
@@ -94,8 +88,8 @@ def test_create_game_returns_200():
 
 def test_create_game_joins_existing_game():
     mock_db = MagicMock()
-    mock_db.courts.find_one.return_value = COURT_DOC
-    mock_db.games.find_one.return_value = GAME_DOC
+    mock_db.courts.get_one.return_value = COURT_DOC
+    mock_db.games.get_one.return_value = GAME_DOC
     with patch("src.modules.games.logic.create_game_logic.get_database", return_value=mock_db):
         response = client.post(
             "/games",
@@ -113,7 +107,7 @@ def test_create_game_returns_401_without_auth():
 
 def test_create_game_returns_422_when_court_not_found():
     mock_db = MagicMock()
-    mock_db.courts.find_one.return_value = None
+    mock_db.courts.get_one.return_value = None
     with patch("src.modules.games.logic.create_game_logic.get_database", return_value=mock_db):
         response = client.post(
             "/games",
@@ -127,7 +121,7 @@ def test_create_game_returns_422_when_court_not_found():
 
 def test_join_game_returns_200():
     mock_db = MagicMock()
-    mock_db.games.find_one.return_value = GAME_DOC
+    mock_db.games.get_one.return_value = GAME_DOC
     with patch("src.modules.games.logic.join_game_logic.get_database", return_value=mock_db):
         response = client.post(f"/games/{GAME_ID}/join", headers=AUTH_HEADERS)
     assert response.status_code == 200
@@ -136,7 +130,7 @@ def test_join_game_returns_200():
 
 def test_join_game_returns_404_when_not_found():
     mock_db = MagicMock()
-    mock_db.games.find_one.return_value = None
+    mock_db.games.get_one.return_value = None
     with patch("src.modules.games.logic.join_game_logic.get_database", return_value=mock_db):
         response = client.post(f"/games/{GAME_ID}/join", headers=AUTH_HEADERS)
     assert response.status_code == 404
@@ -145,7 +139,7 @@ def test_join_game_returns_404_when_not_found():
 def test_join_game_allows_in_progress_game():
     in_progress_game = {**GAME_DOC, "timestamp": datetime.now(tz=timezone.utc) - timedelta(minutes=30)}
     mock_db = MagicMock()
-    mock_db.games.find_one.return_value = in_progress_game
+    mock_db.games.get_one.return_value = in_progress_game
     with patch("src.modules.games.logic.join_game_logic.get_database", return_value=mock_db):
         response = client.post(f"/games/{GAME_ID}/join", headers=AUTH_HEADERS)
     assert response.status_code == 200
@@ -154,7 +148,7 @@ def test_join_game_allows_in_progress_game():
 def test_join_game_returns_403_for_past_game():
     past_game = {**GAME_DOC, "timestamp": datetime.now(tz=timezone.utc) - timedelta(hours=1, seconds=1)}
     mock_db = MagicMock()
-    mock_db.games.find_one.return_value = past_game
+    mock_db.games.get_one.return_value = past_game
     with patch("src.modules.games.logic.join_game_logic.get_database", return_value=mock_db):
         response = client.post(f"/games/{GAME_ID}/join", headers=AUTH_HEADERS)
     assert response.status_code == 403
