@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from bson import ObjectId
 from src.common.libraries.database import get_database
+from src.common.logic.teams import get_active_team
 from src.common.models.court import Court
 from src.common.models.player import Player
 from src.common.models.score import Score
@@ -11,22 +12,8 @@ MIN_POINTS = 1
 MAX_POINTS = 9
 
 PLAYER_INFO_PROJECTION = {"_id": 1, "team_id": 1, "rating": 1}
-TEAM_INFO_PROJECTION = {"_id": 1, "last_activity": 1, "color": 1, "geolocation": 1, "court_id": 1}
 COURT_PLACES_PROJECTION = {"_id": 1, "place_ids": 1}
 TEAM_PLAYERS_PROJECTION = {"_id": 1, "rating": 1, "team_id": 1}
-
-
-def _get_active_team(db, team_id: str) -> Team | None:
-    if not team_id:
-        return None
-    try:
-        doc = db.teams.find_one({"_id": ObjectId(team_id)}, TEAM_INFO_PROJECTION)
-    except Exception:
-        return None
-    if doc is None:
-        return None
-    team = Team.from_doc(doc)
-    return team if team.is_active() else None
 
 
 def _get_both_team_players(db, team_id_a: str, team_id_b: str) -> tuple[list[Player], list[Player]]:
@@ -74,12 +61,12 @@ def submit_score(
         return "opponent_not_found", None
 
     current_player = Player.from_doc(player_doc)
-    team_a = _get_active_team(db, current_player.team_id)
+    team_a = get_active_team(db, current_player.team_id)
     if team_a is None:
         return "no_active_team", None
 
     opponent = Player.from_doc(opponent_doc)
-    team_b = _get_active_team(db, opponent.team_id)
+    team_b = get_active_team(db, opponent.team_id)
     if team_b is None:
         return "opponent_no_active_team", None
 

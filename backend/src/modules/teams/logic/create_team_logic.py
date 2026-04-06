@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from bson import ObjectId
 from src.common.libraries.database import get_database
+from src.common.logic.teams import get_active_team
 from src.common.models.court import Court
 from src.common.models.player import Player
 from src.common.models.team import Team
@@ -11,19 +12,6 @@ NEAREST_COURT_MAX_DISTANCE = 200
 
 PLAYER_TEAM_PROJECTION = {"_id": 1, "team_id": 1, "geolocation": 1}
 NEAREST_COURT_PROJECTION = {"_id": 1, "geolocation": 1}
-TEAM_EXISTS_PROJECTION = {"_id": 1, "last_activity": 1}
-
-
-def _get_active_team_id(db, player: Player) -> str | None:
-    if not player.team_id:
-        return None
-    try:
-        doc = db.teams.find_one({"_id": ObjectId(player.team_id)}, TEAM_EXISTS_PROJECTION)
-    except Exception:
-        return None
-    if doc is None:
-        return None
-    return str(doc["_id"]) if Team.from_doc(doc).is_active() else None
 
 
 def _find_nearest_court(db, lon: float, lat: float) -> Court | None:
@@ -62,9 +50,9 @@ def create_team(current_player_id: str, target_player_id: str) -> tuple[str | No
     current_player = Player.from_doc(current_doc)
     target_player = Player.from_doc(target_doc)
 
-    if _get_active_team_id(db, current_player) is not None:
+    if get_active_team(db, current_player.team_id) is not None:
         return "already_in_team", None
-    if _get_active_team_id(db, target_player) is not None:
+    if get_active_team(db, target_player.team_id) is not None:
         return "target_in_team", None
 
     geo = current_player.geolocation

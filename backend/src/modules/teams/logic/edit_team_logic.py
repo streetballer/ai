@@ -1,27 +1,14 @@
 from datetime import datetime, timezone
 from bson import ObjectId
 from src.common.libraries.database import get_database
+from src.common.logic.teams import get_active_team
 from src.common.models.player import Player
 from src.common.models.team import Team
 
 TEAM_MIN_PLAYERS = 2
 PLAYER_TEAM_PROJECTION = {"_id": 1, "team_id": 1}
-TEAM_FIELDS_PROJECTION = {"_id": 1, "color": 1, "geolocation": 1, "court_id": 1, "last_activity": 1}
 PLAYER_EXISTS_PROJECTION = {"_id": 1, "team_id": 1}
 TEAM_EXISTS_PROJECTION = {"_id": 1, "last_activity": 1}
-
-
-def _get_active_team(db, player: Player) -> Team | None:
-    if not player.team_id:
-        return None
-    try:
-        doc = db.teams.find_one({"_id": ObjectId(player.team_id)}, TEAM_FIELDS_PROJECTION)
-    except Exception:
-        return None
-    if doc is None:
-        return None
-    team = Team.from_doc(doc)
-    return team if team.is_active() else None
 
 
 def _delete_team(db, team_id: str) -> None:
@@ -40,7 +27,7 @@ def edit_team(player_id: str, color: str | None, add_player_ids: list[str] | Non
         return "not_found"
 
     player = Player.from_doc(player_doc)
-    team = _get_active_team(db, player)
+    team = get_active_team(db, player.team_id)
     if team is None:
         return "no_team"
 
