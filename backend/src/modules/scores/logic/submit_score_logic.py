@@ -1,4 +1,4 @@
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from bson import ObjectId
 from src.common.libraries.database import get_database
 from src.common.models.court import Court
@@ -7,7 +7,6 @@ from src.common.models.score import Score
 from src.common.models.team import Team
 from src.common.utilities.serialize import serialize_score
 
-TEAM_ACTIVE_HOURS = 4
 MIN_POINTS = 1
 MAX_POINTS = 9
 
@@ -27,13 +26,7 @@ def _get_active_team(db, team_id: str) -> Team | None:
     if doc is None:
         return None
     team = Team.from_doc(doc)
-    last_activity = team.last_activity
-    if last_activity is None:
-        return None
-    if last_activity.tzinfo is None:
-        last_activity = last_activity.replace(tzinfo=timezone.utc)
-    cutoff = datetime.now(timezone.utc) - timedelta(hours=TEAM_ACTIVE_HOURS)
-    return team if last_activity >= cutoff else None
+    return team if team.is_active() else None
 
 
 def _get_both_team_players(db, team_id_a: str, team_id_b: str) -> tuple[list[Player], list[Player]]:

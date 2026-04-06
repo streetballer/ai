@@ -1,15 +1,29 @@
 from dataclasses import dataclass
-from datetime import datetime
-from typing import Any
+from datetime import datetime, timezone, timedelta
+from typing import Any, ClassVar
 
 
 @dataclass
 class Team:
+    ACTIVE_HOURS: ClassVar[int] = 4
+
     id: str = ""
     color: str = ""
     geolocation: dict | None = None
     court_id: str = ""
     last_activity: datetime | None = None
+
+    def is_active(self) -> bool:
+        if self.last_activity is None:
+            return False
+        last = self.last_activity
+        if last.tzinfo is None:
+            last = last.replace(tzinfo=timezone.utc)
+        return last >= datetime.now(timezone.utc) - timedelta(hours=self.ACTIVE_HOURS)
+
+    @classmethod
+    def active_cutoff(cls) -> datetime:
+        return datetime.now(timezone.utc) - timedelta(hours=cls.ACTIVE_HOURS)
 
     @classmethod
     def from_doc(cls, doc: dict[str, Any]) -> "Team":

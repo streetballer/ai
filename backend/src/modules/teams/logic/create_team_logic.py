@@ -1,4 +1,4 @@
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from bson import ObjectId
 from src.common.libraries.database import get_database
 from src.common.models.court import Court
@@ -7,7 +7,6 @@ from src.common.models.team import Team
 from src.common.utilities.color import generate_color
 from src.common.utilities.serialize import serialize_team
 
-TEAM_ACTIVE_HOURS = 4
 NEAREST_COURT_MAX_DISTANCE = 200
 
 PLAYER_TEAM_PROJECTION = {"_id": 1, "team_id": 1, "geolocation": 1}
@@ -24,13 +23,7 @@ def _get_active_team_id(db, player: Player) -> str | None:
         return None
     if doc is None:
         return None
-    last_activity = doc.get("last_activity")
-    if last_activity is None:
-        return None
-    if last_activity.tzinfo is None:
-        last_activity = last_activity.replace(tzinfo=timezone.utc)
-    cutoff = datetime.now(timezone.utc) - timedelta(hours=TEAM_ACTIVE_HOURS)
-    return str(doc["_id"]) if last_activity >= cutoff else None
+    return str(doc["_id"]) if Team.from_doc(doc).is_active() else None
 
 
 def _find_nearest_court(db, lon: float, lat: float) -> Court | None:

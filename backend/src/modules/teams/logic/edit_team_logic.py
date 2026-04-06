@@ -1,10 +1,9 @@
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from bson import ObjectId
 from src.common.libraries.database import get_database
 from src.common.models.player import Player
 from src.common.models.team import Team
 
-TEAM_ACTIVE_HOURS = 4
 TEAM_MIN_PLAYERS = 2
 PLAYER_TEAM_PROJECTION = {"_id": 1, "team_id": 1}
 TEAM_FIELDS_PROJECTION = {"_id": 1, "color": 1, "geolocation": 1, "court_id": 1, "last_activity": 1}
@@ -22,13 +21,7 @@ def _get_active_team(db, player: Player) -> Team | None:
     if doc is None:
         return None
     team = Team.from_doc(doc)
-    last_activity = team.last_activity
-    if last_activity is None:
-        return None
-    if last_activity.tzinfo is None:
-        last_activity = last_activity.replace(tzinfo=timezone.utc)
-    cutoff = datetime.now(timezone.utc) - timedelta(hours=TEAM_ACTIVE_HOURS)
-    return team if last_activity >= cutoff else None
+    return team if team.is_active() else None
 
 
 def _delete_team(db, team_id: str) -> None:
@@ -77,18 +70,12 @@ def edit_team(player_id: str, color: str | None, add_player_ids: list[str] | Non
             ):
                 existing_teams[str(tdoc["_id"])] = tdoc
 
-        cutoff = datetime.now(timezone.utc) - timedelta(hours=TEAM_ACTIVE_HOURS)
         valid_ids = []
         for raw_doc, player in zip(candidate_docs, candidates):
             if player.team_id:
                 tdoc = existing_teams.get(player.team_id)
-                if tdoc is not None:
-                    last = tdoc.get("last_activity")
-                    if last is not None:
-                        if last.tzinfo is None:
-                            last = last.replace(tzinfo=timezone.utc)
-                        if last >= cutoff:
-                            continue
+                if tdoc is not None and Team.from_doc(tdoc).is_active():
+                    continue
             valid_ids.append(raw_doc["_id"])
 
         if valid_ids:

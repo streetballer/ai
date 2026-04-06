@@ -1,4 +1,3 @@
-from datetime import datetime, timezone, timedelta
 from bson import ObjectId
 from src.common.libraries.database import get_database
 from src.common.models.player import Player
@@ -6,7 +5,6 @@ from src.common.models.score import Score
 from src.common.models.team import Team
 from src.common.utilities.serialize import public_player, serialize_score, serialize_team
 
-TEAM_ACTIVE_HOURS = 4
 PLAYER_TEAM_PROJECTION = {"_id": 1, "team_id": 1}
 TEAM_FIELDS_PROJECTION = {"_id": 1, "color": 1, "geolocation": 1, "court_id": 1, "last_activity": 1}
 PUBLIC_PLAYER_PROJECTION = {"_id": 1, "username": 1, "language": 1, "team_id": 1}
@@ -45,18 +43,13 @@ def get_standings(player_id: str) -> dict | None:
         return None
 
     own_team = Team.from_doc(team_doc)
-    last_activity = own_team.last_activity
-    if last_activity is not None:
-        if last_activity.tzinfo is None:
-            last_activity = last_activity.replace(tzinfo=timezone.utc)
-        cutoff = datetime.now(timezone.utc) - timedelta(hours=TEAM_ACTIVE_HOURS)
-        if last_activity < cutoff:
-            return None
+    if not own_team.is_active():
+        return None
 
     if not own_team.court_id:
         return None
 
-    cutoff = datetime.now(timezone.utc) - timedelta(hours=TEAM_ACTIVE_HOURS)
+    cutoff = Team.active_cutoff()
     team_docs = list(db.teams.find(
         {"court_id": own_team.court_id, "last_activity": {"$gte": cutoff}},
         TEAM_FIELDS_PROJECTION,
