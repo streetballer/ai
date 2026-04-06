@@ -180,8 +180,8 @@ At the end of every session, update "Project Status", "Commands", and "Notes" au
 
 | Task             | Comments                                                              |
 | ---------------- | --------------------------------------------------------------------- |
-| Last Task        | Refactor backend: classes over dicts, explicit DB projections         |
-| Next Task        | Team, score, league, and settings endpoints                           |
+| Last Task        | Teams module endpoints (6 endpoints, 27 tests)                        |
+| Next Task        | Score, league, and settings endpoints                                 |
 | Blocking Factors |                                                                       |
 
 ### Commands

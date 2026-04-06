@@ -5,6 +5,7 @@ from src.modules.players.routes.router import router as players_router
 from src.modules.courts.routes.router import router as courts_router
 from src.modules.games.routes.router import router as games_router
 from src.modules.places.routes.router import router as places_router
+from src.modules.teams.routes.router import router as teams_router
 
 router = APIRouter()
 
@@ -14,3 +15,4 @@ router.include_router(players_router)
 router.include_router(courts_router)
 router.include_router(games_router)
 router.include_router(places_router)
+router.include_router(teams_router)
