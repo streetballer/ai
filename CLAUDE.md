@@ -180,8 +180,8 @@ At the end of every session, update "Project Status", "Commands", and "Notes" au
 
 | Task             | Comments                                         |
 | ---------------- | ------------------------------------------------ |
-| Last Task        | Build league module endpoint (157 tests passing) |
-| Next Task        | Build settings module endpoints                  |
+| Last Task        | Build settings module endpoints; 185 passing     |
+| Next Task        | TBD                                              |
 | Blocking Factors |                                                  |
 
 ### Commands

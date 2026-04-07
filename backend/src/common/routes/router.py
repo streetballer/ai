@@ -8,6 +8,7 @@ from src.modules.places.routes.router import router as places_router
 from src.modules.teams.routes.router import router as teams_router
 from src.modules.scores.routes.router import router as scores_router
 from src.modules.league.routes.router import router as league_router
+from src.modules.settings.routes.router import router as settings_router
 
 router = APIRouter()
 
@@ -20,3 +21,4 @@ router.include_router(places_router)
 router.include_router(teams_router)
 router.include_router(scores_router)
 router.include_router(league_router)
+router.include_router(settings_router)
