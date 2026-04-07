@@ -20,4 +20,4 @@ def seed_courts(db: Database, place_ids: list[str]) -> list[str]:
         Court(name="Pista de los Jardines del Genil", geolocation=point(LON - 0.008, LAT - 0.001), place_ids=[centro_id, granada_id]),
     ]
 
-    return [db.courts.insert_one(court.to_doc()) for court in courts]
+    return db.courts.insert_many([court.to_doc() for court in courts])

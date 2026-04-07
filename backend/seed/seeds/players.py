@@ -21,9 +21,10 @@ _PLAYERS = [
 
 
 def seed_players(db: Database) -> list[str]:
-    ids = []
-    for i, (username, email, rating) in enumerate(_PLAYERS):
-        player_id = str(ObjectId())
+    now = datetime.now(timezone.utc)
+    player_ids = [str(ObjectId()) for _ in _PLAYERS]
+    docs = []
+    for i, (player_id, (username, email, rating)) in enumerate(zip(player_ids, _PLAYERS)):
         lat_offset = (i - 4) * 0.002
         lon_offset = (i % 3 - 1) * 0.003
         player = Player(
@@ -35,9 +36,9 @@ def seed_players(db: Database) -> list[str]:
             language="en",
             rating=rating,
             geolocation=point(LON + lon_offset, LAT + lat_offset),
-            geolocation_timestamp=datetime.now(timezone.utc),
-            created=datetime.now(timezone.utc),
+            geolocation_timestamp=now,
+            created=now,
         )
-        db.players.insert_one(player.to_doc())
-        ids.append(player_id)
-    return ids
+        docs.append(player.to_doc())
+    db.players.insert_many(docs)
+    return player_ids

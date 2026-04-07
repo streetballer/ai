@@ -20,17 +20,22 @@ _TEAM_MEMBERS = [
 
 
 def seed_teams(db: Database, court_ids: list[str], player_ids: list[str]) -> list[str]:
-    team_ids = []
-    for (color, geolocation, court_index, age), member_indices in zip(_TEAM_DEFS, _TEAM_MEMBERS):
+    now = datetime.now(timezone.utc)
+    team_oids = [ObjectId() for _ in _TEAM_DEFS]
+    team_ids = [str(oid) for oid in team_oids]
+
+    docs = []
+    for (color, geolocation, court_index, age), team_oid in zip(_TEAM_DEFS, team_oids):
         team = Team(
             color=color,
             geolocation=geolocation,
             court_id=court_ids[court_index],
-            last_activity=datetime.now(timezone.utc) - age,
+            last_activity=now - age,
         )
-        team_id = db.teams.insert_one(team.to_doc())
-        team_ids.append(team_id)
+        docs.append({"_id": team_oid, **team.to_doc()})
+    db.teams.insert_many(docs)
 
+    for team_id, member_indices in zip(team_ids, _TEAM_MEMBERS):
         member_oids = [ObjectId(player_ids[i]) for i in member_indices]
         db.players.update_many(
             {"_id": {"$in": member_oids}},

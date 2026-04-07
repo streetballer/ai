@@ -32,6 +32,14 @@ class Collection:
             key = next(iter(exc.details.get("keyPattern", {})), "")
             raise DuplicateEntryError(key) from exc
 
+    def insert_many(self, documents: list[dict[str, Any]]) -> list[str]:
+        try:
+            result = self._collection.insert_many(documents)
+            return [str(oid) for oid in result.inserted_ids]
+        except _DuplicateKeyError as exc:
+            key = next(iter(exc.details.get("keyPattern", {})), "")
+            raise DuplicateEntryError(key) from exc
+
     def update_one(self, filter: dict[str, Any], update: dict[str, Any] | list) -> None:
         self._collection.update_one(filter, update)
 

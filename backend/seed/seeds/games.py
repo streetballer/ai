@@ -13,7 +13,7 @@ _GAME_DEFS = [
 
 def seed_games(db: Database, court_ids: list[str], player_ids: list[str]) -> list[str]:
     now = datetime.now(timezone.utc)
-    game_ids = []
+    docs = []
     for days_ahead, court_index, player_indices in _GAME_DEFS:
         timestamp = Game.floor_to_hour(now + timedelta(days=days_ahead)).replace(hour=18)
         game = Game(
@@ -21,5 +21,5 @@ def seed_games(db: Database, court_ids: list[str], player_ids: list[str]) -> lis
             court_id=court_ids[court_index],
             player_ids=[player_ids[i] for i in player_indices],
         )
-        game_ids.append(db.games.insert_one(game.to_doc()))
-    return game_ids
+        docs.append(game.to_doc())
+    return db.games.insert_many(docs)

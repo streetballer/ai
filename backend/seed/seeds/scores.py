@@ -29,23 +29,17 @@ def seed_scores(
     place_ids: list[str],
 ) -> list[str]:
     now = datetime.now(timezone.utc)
-    score_ids = []
-
+    docs = []
     for days_ago, team_a_index, team_b_index, score_a, score_b, court_index in _SCORE_DEFS:
-        timestamp = now - timedelta(days=days_ago)
         side_a = [player_ids[i] for i in _TEAM_MEMBERS[team_a_index]]
         side_b = [player_ids[i] for i in _TEAM_MEMBERS[team_b_index]]
         all_players = side_a + side_b
-
         side_a_wins = score_a > score_b
         winner_points = 5
-        points_a = winner_points if side_a_wins else 0
-        points_b = winner_points if not side_a_wins else 0
-
         score = Score(
-            timestamp=timestamp,
+            timestamp=now - timedelta(days=days_ago),
             result=(score_a, score_b),
-            points=(points_a, points_b),
+            points=(winner_points if side_a_wins else 0, winner_points if not side_a_wins else 0),
             players=(side_a, side_b),
             teams=(team_ids[team_a_index], team_ids[team_b_index]),
             colors=(_TEAM_COLORS[team_a_index], _TEAM_COLORS[team_b_index]),
@@ -57,6 +51,5 @@ def seed_scores(
             court_id=court_ids[court_index],
             place_ids=[place_ids[0]],
         )
-        score_ids.append(db.scores.insert_one(score.to_doc()))
-
-    return score_ids
+        docs.append(score.to_doc())
+    return db.scores.insert_many(docs)

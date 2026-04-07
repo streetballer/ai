@@ -1,6 +1,6 @@
 from pymongo import MongoClient
 from src.common.environment.config import MONGODB_URI, MONGODB_NAME
-from src.common.libraries.database import get_database
+from src.common.libraries.database import get_database, setup_indexes
 from seed.seeds.places import seed_places
 from seed.seeds.courts import seed_courts
 from seed.seeds.players import seed_players
@@ -11,16 +11,16 @@ from seed.seeds.scores import seed_scores
 _COLLECTIONS = ["places", "courts", "players", "teams", "games", "scores"]
 
 
-def _clear(db_raw) -> None:
+def _reset(db_raw) -> None:
     for collection in _COLLECTIONS:
-        db_raw[collection].delete_many({})
-    print("Cleared collections.")
+        db_raw[collection].drop()
+    setup_indexes()
+    print("Reset collections.")
 
 
 def main() -> None:
     client = MongoClient(MONGODB_URI)
-    db_raw = client[MONGODB_NAME]
-    _clear(db_raw)
+    _reset(client[MONGODB_NAME])
     client.close()
 
     db = get_database()
