@@ -35,21 +35,22 @@ def get_standings(player_id: str) -> dict | None:
     if not player.team_id:
         return None
 
+    cutoff = Team.active_cutoff()
+
     try:
-        team_doc = db.teams.get_one({"_id": ObjectId(player.team_id)}, TEAM_FIELDS_PROJECTION)
+        team_doc = db.teams.get_one(
+            {"_id": ObjectId(player.team_id), "last_activity": {"$gte": cutoff}},
+            TEAM_FIELDS_PROJECTION,
+        )
     except Exception:
         return None
     if team_doc is None:
         return None
 
     own_team = Team.from_doc(team_doc)
-    if not own_team.is_active():
-        return None
 
     if not own_team.court_id:
         return None
-
-    cutoff = Team.active_cutoff()
     team_docs = db.teams.get_many(
         {"court_id": own_team.court_id, "last_activity": {"$gte": cutoff}},
         TEAM_FIELDS_PROJECTION,

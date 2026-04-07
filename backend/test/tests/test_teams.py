@@ -161,7 +161,7 @@ def test_get_own_team_returns_404_when_player_has_no_team():
 def test_get_own_team_returns_404_when_team_inactive():
     mock_db = MagicMock()
     mock_db.players.get_one.return_value = PLAYER_DOC
-    mock_db.teams.get_one.return_value = {**TEAM_DOC, "last_activity": INACTIVE_LAST_ACTIVITY}
+    mock_db.teams.get_one.return_value = None
     with patch("src.modules.teams.logic.get_own_team_logic.get_database", return_value=mock_db):
         response = client.get("/teams/team", headers=AUTH_HEADERS)
     assert response.status_code == 404

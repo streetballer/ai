@@ -8,7 +8,7 @@ from src.common.models.team import Team
 TEAM_MIN_PLAYERS = 2
 PLAYER_TEAM_PROJECTION = {"_id": 1, "team_id": 1}
 PLAYER_EXISTS_PROJECTION = {"_id": 1, "team_id": 1}
-TEAM_EXISTS_PROJECTION = {"_id": 1, "last_activity": 1}
+TEAM_EXISTS_PROJECTION = {"_id": 1}
 
 
 def _delete_team(db, team_id: str) -> None:
@@ -49,20 +49,21 @@ def edit_team(player_id: str, color: str | None, add_player_ids: list[str] | Non
         candidates = [Player.from_doc(d) for d in candidate_docs]
 
         team_ids_to_check = [p.team_id for p in candidates if p.team_id]
-        existing_teams: dict[str, dict] = {}
+        active_team_ids: set[str] = set()
         if team_ids_to_check:
             for tdoc in db.teams.get_many(
-                {"_id": {"$in": [ObjectId(tid) for tid in team_ids_to_check]}},
+                {
+                    "_id": {"$in": [ObjectId(tid) for tid in team_ids_to_check]},
+                    "last_activity": {"$gte": Team.active_cutoff()},
+                },
                 TEAM_EXISTS_PROJECTION,
             ):
-                existing_teams[str(tdoc["_id"])] = tdoc
+                active_team_ids.add(str(tdoc["_id"]))
 
         valid_ids = []
         for raw_doc, player in zip(candidate_docs, candidates):
-            if player.team_id:
-                tdoc = existing_teams.get(player.team_id)
-                if tdoc is not None and Team.from_doc(tdoc).is_active():
-                    continue
+            if player.team_id and player.team_id in active_team_ids:
+                continue
             valid_ids.append(raw_doc["_id"])
 
         if valid_ids:

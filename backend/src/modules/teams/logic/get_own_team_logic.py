@@ -23,7 +23,10 @@ def get_own_team(player_id: str) -> dict | None:
         return None
 
     try:
-        team_doc = db.teams.get_one({"_id": ObjectId(player.team_id)}, TEAM_FIELDS_PROJECTION)
+        team_doc = db.teams.get_one(
+            {"_id": ObjectId(player.team_id), "last_activity": {"$gte": Team.active_cutoff()}},
+            TEAM_FIELDS_PROJECTION,
+        )
     except Exception:
         return None
     if team_doc is None:
@@ -31,9 +34,6 @@ def get_own_team(player_id: str) -> dict | None:
         return None
 
     team = Team.from_doc(team_doc)
-    if not team.is_active():
-        db.players.update_one({"_id": player_doc["_id"]}, {"$set": {"team_id": ""}})
-        return None
 
     player_docs = db.players.get_many({"team_id": player.team_id}, PUBLIC_PLAYER_PROJECTION)
     players = [public_player(Player.from_doc(p)) for p in player_docs]
