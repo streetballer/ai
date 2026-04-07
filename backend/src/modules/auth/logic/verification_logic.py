@@ -1,4 +1,5 @@
 from src.common.environment.config import FRONTEND_URL
+from bson import ObjectId
 from src.common.libraries.database import get_database
 from src.common.libraries.email import send_email
 from src.common.libraries.jwt import create_verification_token
@@ -16,6 +17,6 @@ def send_verification_email(player_id: str, email: str, username: str) -> None:
 def verify_email(player_id: str) -> None:
     db = get_database()
     db.players.update_one(
-        {"_id": player_id},
+        {"_id": ObjectId(player_id)},
         {"$set": {"email_verified": True}},
     )

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, ClassVar
+from bson import ObjectId
 
 
 @dataclass
@@ -45,7 +46,7 @@ class Player:
 
     def to_doc(self) -> dict[str, Any]:
         return {
-            "_id": self.id,
+            "_id": ObjectId(self.id),
             "email": self.email,
             "email_verified": self.email_verified,
             "username": self.username,

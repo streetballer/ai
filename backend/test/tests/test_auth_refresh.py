@@ -2,12 +2,16 @@ from datetime import datetime, timezone, timedelta
 from unittest.mock import MagicMock, patch
 import jwt
 import pytest
+from bson import ObjectId
 from fastapi.testclient import TestClient
 from src.main import app
 from src.common.environment.config import JWT_SECRET
 from src.common.libraries.hash import hash_value
 
 client = TestClient(app)
+
+PLAYER_ID = str(ObjectId())
+OTHER_PLAYER_ID = str(ObjectId())
 
 
 def make_token(player_id: str, token_type: str, expired: bool = False) -> str:
@@ -26,8 +30,8 @@ def mock_db_with_player(player_id: str, refresh_token: str) -> MagicMock:
 
 
 def test_refresh_returns_200_with_new_tokens():
-    token = make_token("player_123", "refresh")
-    mock_db = mock_db_with_player("player_123", token)
+    token = make_token(PLAYER_ID, "refresh")
+    mock_db = mock_db_with_player(PLAYER_ID, token)
     with patch("src.modules.auth.logic.token_logic.get_database", return_value=mock_db):
         response = client.post(f"/auth/refresh/{token}")
     assert response.status_code == 200
@@ -37,15 +41,15 @@ def test_refresh_returns_200_with_new_tokens():
 
 
 def test_refresh_updates_stored_token_hash():
-    token = make_token("player_123", "refresh")
-    mock_db = mock_db_with_player("player_123", token)
+    token = make_token(PLAYER_ID, "refresh")
+    mock_db = mock_db_with_player(PLAYER_ID, token)
     with patch("src.modules.auth.logic.token_logic.get_database", return_value=mock_db):
         client.post(f"/auth/refresh/{token}")
     mock_db.players.update_one.assert_called_once()
 
 
 def test_refresh_returns_498_for_expired_token():
-    token = make_token("player_123", "refresh", expired=True)
+    token = make_token(PLAYER_ID, "refresh", expired=True)
     response = client.post(f"/auth/refresh/{token}")
     assert response.status_code == 498
 
@@ -56,21 +60,21 @@ def test_refresh_returns_498_for_invalid_token():
 
 
 def test_refresh_returns_498_for_access_token_type():
-    token = make_token("player_123", "access")
+    token = make_token(PLAYER_ID, "access")
     response = client.post(f"/auth/refresh/{token}")
     assert response.status_code == 498
 
 
 def test_refresh_returns_498_for_hash_mismatch():
-    token = make_token("player_123", "refresh")
-    mock_db = mock_db_with_player("player_123", "different_token")
+    token = make_token(PLAYER_ID, "refresh")
+    mock_db = mock_db_with_player(PLAYER_ID, "different_token")
     with patch("src.modules.auth.logic.token_logic.get_database", return_value=mock_db):
         response = client.post(f"/auth/refresh/{token}")
     assert response.status_code == 498
 
 
 def test_refresh_returns_498_for_unknown_player():
-    token = make_token("player_unknown", "refresh")
+    token = make_token(OTHER_PLAYER_ID, "refresh")
     mock_db = MagicMock()
     mock_db.players.get_one.return_value = None
     with patch("src.modules.auth.logic.token_logic.get_database", return_value=mock_db):
