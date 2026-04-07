@@ -10,7 +10,7 @@ For amateur basketball players who face a lack of playing opportunities, Streetb
 | ------------------- | --------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------- |
 | /home               | Top-level Route | ![01-home.png](./.claude/screens/01-home.png)                     | Manage team, See nearby players/teams, Manage recent scores, Record scores |
 | /games              | Top-level Route | ![02-games.png](./.claude/screens/02-games.png)                   | Find upcoming games                                                        |
-| /courts             | Top-level Route | ![03-map.png](./.claude/screens/03-map.png)                       | Browse basketball courts, Add missing courts                               |
+| /courts             | Top-level Route | ![03-courts.png](./.claude/screens/03-courts.png)                 | Browse basketball courts, Add missing courts                               |
 | /courts/:court_id   | Child Route     | ![04-court.png](./.claude/screens/04-court.png)                   | View court details, Find upcoming games, Sign up to play                   |
 | /league             | Top-level Route | ![05-league.png](./.claude/screens/05-league.png)                 | Follow league rankings                                                     |
 | /score              | Child Route     | ![06-score.png](./.claude/screens/06-score.png)                   | See score details, Confirm/reject scores                                   |
@@ -178,11 +178,11 @@ At the end of every session, update "Project Status", "Commands", and "Notes" au
 
 ### Project Status
 
-| Task             | Comments                                          |
-| ---------------- | ------------------------------------------------- |
-| Last Task        | Provider-agnostic DB wrapper + 145 tests passing  |
-| Next Task        | Build league module endpoint                      |
-| Blocking Factors |                                                   |
+| Task             | Comments                                         |
+| ---------------- | ------------------------------------------------ |
+| Last Task        | Build league module endpoint (157 tests passing) |
+| Next Task        | Build settings module endpoints                  |
+| Blocking Factors |                                                  |
 
 ### Commands
 
