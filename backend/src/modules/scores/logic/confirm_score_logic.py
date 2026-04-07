@@ -12,13 +12,6 @@ SCORE_CONFIRM_PROJECTION = {
 }
 
 
-def _side_confirmed(player_ids: list[str], confirmations: list[str]) -> bool:
-    if not player_ids:
-        return False
-    count = sum(1 for pid in player_ids if pid in confirmations)
-    return count > len(player_ids) / 2
-
-
 def confirm_score(score_id: str, player_id: str) -> str | None:
     db = get_database()
     try:
@@ -45,7 +38,7 @@ def confirm_score(score_id: str, player_id: str) -> str | None:
     side_a = list(score.players[0])
     side_b = list(score.players[1])
 
-    if _side_confirmed(side_a, updated_confirmations) and _side_confirmed(side_b, updated_confirmations):
+    if Score.side_voted(side_a, updated_confirmations) and Score.side_voted(side_b, updated_confirmations):
         db.scores.update_one(
             {"_id": ObjectId(score_id)},
             {"$set": {"confirmed": True}},

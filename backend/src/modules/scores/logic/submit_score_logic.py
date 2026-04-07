@@ -8,9 +8,6 @@ from src.common.models.score import Score
 from src.common.models.team import Team
 from src.common.utilities.serialize import serialize_score
 
-MIN_POINTS = 1
-MAX_POINTS = 9
-
 PLAYER_INFO_PROJECTION = {"_id": 1, "team_id": 1, "rating": 1}
 COURT_PLACES_PROJECTION = {"_id": 1, "place_ids": 1}
 TEAM_PLAYERS_PROJECTION = {"_id": 1, "rating": 1, "team_id": 1}
@@ -21,18 +18,6 @@ def _get_both_team_players(db, team_id_a: str, team_id_b: str) -> tuple[list[Pla
     players_a = [Player.from_doc(d) for d in docs if d.get("team_id") == team_id_a]
     players_b = [Player.from_doc(d) for d in docs if d.get("team_id") == team_id_b]
     return players_a, players_b
-
-
-def _calculate_points(winner_avg: float, loser_avg: float) -> int:
-    points = 5.0 - (winner_avg - loser_avg)
-    return max(MIN_POINTS, min(MAX_POINTS, round(points)))
-
-
-def _side_confirmed(player_ids: list[str], confirmations: list[str]) -> bool:
-    if not player_ids:
-        return False
-    count = sum(1 for pid in player_ids if pid in confirmations)
-    return count > len(player_ids) / 2
 
 
 def submit_score(
@@ -84,7 +69,7 @@ def submit_score(
     winner_avg = sum(p.rating for p in winner_players) / len(winner_players) if winner_players else 5.0
     loser_avg = sum(p.rating for p in loser_players) / len(loser_players) if loser_players else 5.0
 
-    winner_points = _calculate_points(winner_avg, loser_avg)
+    winner_points = Score.calculate_winner_points(winner_avg, loser_avg)
     points_a = winner_points if side_a_wins else 0
     points_b = winner_points if not side_a_wins else 0
 
@@ -129,7 +114,7 @@ def submit_score(
         place_ids=place_ids,
     )
 
-    if _side_confirmed(player_ids_a, confirmations) and _side_confirmed(player_ids_b, confirmations):
+    if Score.side_voted(player_ids_a, confirmations) and Score.side_voted(player_ids_b, confirmations):
         score.confirmed = True
 
     db.teams.update_many(

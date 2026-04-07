@@ -5,7 +5,6 @@ from src.common.logic.teams import get_active_team
 from src.common.models.player import Player
 
 PLAYER_AUTH_PROJECTION = {"_id": 1, "password_hash": 1, "team_id": 1}
-TEAM_MEMBER_COUNT_PROJECTION = {"_id": 1}
 
 TEAM_MIN_PLAYERS = 2
 
@@ -26,7 +25,7 @@ def delete_account(player_id: str, password: str) -> str | None:
     team = get_active_team(db, player.team_id)
     if team is not None:
         db.players.update_one({"_id": ObjectId(player_id)}, {"$set": {"team_id": ""}})
-        remaining = db.players.get_many({"team_id": team.id}, TEAM_MEMBER_COUNT_PROJECTION)
+        remaining = db.players.get_many({"team_id": team.id})
         if len(remaining) < TEAM_MIN_PLAYERS:
             db.players.update_many({"team_id": team.id}, {"$set": {"team_id": ""}})
             db.teams.delete_one({"_id": ObjectId(team.id)})

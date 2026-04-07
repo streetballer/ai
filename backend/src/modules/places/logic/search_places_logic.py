@@ -1,20 +1,12 @@
-from math import radians, sin, cos, sqrt, atan2
 from src.common.constants.geo import EARTH_RADIUS_METERS
 from src.common.libraries.database import get_database
 from src.common.models.place import Place
+from src.common.utilities.geo import distance_meters
 from src.common.utilities.serialize import serialize_place
 
 SEARCH_RADIUS_METERS = 50000
 SEARCH_LIMIT = 20
 PLACE_FIELDS_PROJECTION = {"_id": 1, "geolocation": 1, "geolocation_box": 1, "address": 1, "is_parent": 1, "parent_ids": 1}
-
-
-def _distance_meters(lon1: float, lat1: float, lon2: float, lat2: float) -> float:
-    phi1, phi2 = radians(lat1), radians(lat2)
-    dphi = radians(lat2 - lat1)
-    dlambda = radians(lon2 - lon1)
-    a = sin(dphi / 2) ** 2 + cos(phi1) * cos(phi2) * sin(dlambda / 2) ** 2
-    return EARTH_RADIUS_METERS * 2 * atan2(sqrt(a), sqrt(1 - a))
 
 
 def search_places(text: str | None, lon: float | None, lat: float | None) -> list[dict]:
@@ -30,7 +22,7 @@ def search_places(text: str | None, lon: float | None, lat: float | None) -> lis
             def sort_key(place: Place) -> float:
                 if place.geolocation and place.geolocation.get("coordinates"):
                     coords = place.geolocation["coordinates"]
-                    return _distance_meters(lon, lat, coords[0], coords[1])
+                    return distance_meters(lon, lat, coords[0], coords[1])
                 return float("inf")
 
             places.sort(key=sort_key)

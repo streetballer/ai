@@ -6,6 +6,7 @@ from typing import Any, ClassVar
 @dataclass
 class Team:
     ACTIVE_HOURS: ClassVar[int] = 4
+    FIELDS_PROJECTION: ClassVar[dict] = {"_id": 1, "color": 1, "geolocation": 1, "court_id": 1, "last_activity": 1}
 
     id: str = ""
     color: str = ""

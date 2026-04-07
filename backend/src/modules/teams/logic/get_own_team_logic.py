@@ -5,8 +5,6 @@ from src.common.models.team import Team
 from src.common.utilities.serialize import public_player, serialize_team
 
 PLAYER_TEAM_PROJECTION = {"_id": 1, "team_id": 1}
-TEAM_FIELDS_PROJECTION = {"_id": 1, "color": 1, "geolocation": 1, "court_id": 1, "last_activity": 1}
-PUBLIC_PLAYER_PROJECTION = {"_id": 1, "username": 1, "language": 1, "team_id": 1}
 
 
 def get_own_team(player_id: str) -> dict | None:
@@ -25,7 +23,7 @@ def get_own_team(player_id: str) -> dict | None:
     try:
         team_doc = db.teams.get_one(
             {"_id": ObjectId(player.team_id), "last_activity": {"$gte": Team.active_cutoff()}},
-            TEAM_FIELDS_PROJECTION,
+            Team.FIELDS_PROJECTION,
         )
     except Exception:
         return None
@@ -35,7 +33,7 @@ def get_own_team(player_id: str) -> dict | None:
 
     team = Team.from_doc(team_doc)
 
-    player_docs = db.players.get_many({"team_id": player.team_id}, PUBLIC_PLAYER_PROJECTION)
+    player_docs = db.players.get_many({"team_id": player.team_id}, Player.PUBLIC_PROJECTION)
     players = [public_player(Player.from_doc(p)) for p in player_docs]
 
     return {"team": serialize_team(team), "players": players}

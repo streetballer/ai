@@ -1,10 +1,12 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any
+from typing import Any, ClassVar
 
 
 @dataclass
 class Player:
+    PUBLIC_PROJECTION: ClassVar[dict] = {"_id": 1, "username": 1, "language": 1, "team_id": 1}
+
     id: str
     email: str = ""
     email_verified: bool = False

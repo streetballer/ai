@@ -11,13 +11,6 @@ SCORE_REJECT_PROJECTION = {
 }
 
 
-def _side_rejected(player_ids: list[str], rejections: list[str]) -> bool:
-    if not player_ids:
-        return False
-    count = sum(1 for pid in player_ids if pid in rejections)
-    return count > len(player_ids) / 2
-
-
 def reject_score(score_id: str, player_id: str) -> str | None:
     db = get_database()
     try:
@@ -44,7 +37,7 @@ def reject_score(score_id: str, player_id: str) -> str | None:
     side_a = list(score.players[0])
     side_b = list(score.players[1])
 
-    if _side_rejected(side_a, updated_rejections) or _side_rejected(side_b, updated_rejections):
+    if Score.side_voted(side_a, updated_rejections) or Score.side_voted(side_b, updated_rejections):
         db.scores.delete_one({"_id": ObjectId(score_id)})
         return "deleted"
 

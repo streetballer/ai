@@ -1,8 +1,6 @@
 from bson import ObjectId
 from src.common.libraries.database import get_database, DuplicateEntryError
 
-PLAYER_EXISTS_PROJECTION = {"_id": 1}
-
 
 def edit_username(player_id: str, username: str) -> str | None:
     db = get_database()

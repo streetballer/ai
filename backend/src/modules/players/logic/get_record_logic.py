@@ -3,7 +3,6 @@ from src.common.libraries.database import get_database
 from src.common.models.score import Score
 from src.modules.players.models.record import Record
 
-PLAYER_EXISTS_PROJECTION = {"_id": 1}
 SCORE_FIELDS_PROJECTION = {"_id": 1, "players": 1, "points": 1}
 
 
@@ -14,7 +13,7 @@ def get_record_with_player(current_player_id: str, target_player_id: str) -> Rec
     except Exception:
         return None
 
-    if db.players.get_one({"_id": target_oid}, PLAYER_EXISTS_PROJECTION) is None:
+    if db.players.get_one({"_id": target_oid}) is None:
         return None
 
     score_docs = db.scores.get_many(

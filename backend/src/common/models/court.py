@@ -1,9 +1,11 @@
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, ClassVar
 
 
 @dataclass
 class Court:
+    FIELDS_PROJECTION: ClassVar[dict] = {"_id": 1, "name": 1, "geolocation": 1, "place_ids": 1}
+
     id: str = ""
     name: str = ""
     geolocation: dict | None = None

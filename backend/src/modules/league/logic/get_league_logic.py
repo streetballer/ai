@@ -2,8 +2,6 @@ from bson import ObjectId
 from src.common.libraries.database import get_database
 from src.common.models.score import Score
 
-COURT_EXISTS_PROJECTION = {"_id": 1}
-PLACE_EXISTS_PROJECTION = {"_id": 1}
 SCORE_FIELDS_PROJECTION = {
     "_id": 1,
     "points": 1,
@@ -16,7 +14,7 @@ def get_league(court_id: str | None, place_id: str | None, team_size: int) -> li
 
     if court_id:
         try:
-            court_doc = db.courts.get_one({"_id": ObjectId(court_id)}, COURT_EXISTS_PROJECTION)
+            court_doc = db.courts.get_one({"_id": ObjectId(court_id)})
         except Exception:
             return None
         if court_doc is None:
@@ -24,7 +22,7 @@ def get_league(court_id: str | None, place_id: str | None, team_size: int) -> li
         location_filter: dict = {"court_id": court_id}
     elif place_id:
         try:
-            place_doc = db.places.get_one({"_id": ObjectId(place_id)}, PLACE_EXISTS_PROJECTION)
+            place_doc = db.places.get_one({"_id": ObjectId(place_id)})
         except Exception:
             return None
         if place_doc is None:

@@ -8,8 +8,6 @@ DUPLICATE_RADIUS_METERS = 100
 PLACE_SEARCH_RADIUS_METERS = 50000
 
 NEAREST_PLACE_PROJECTION = {"_id": 1, "parent_ids": 1}
-COURT_FIELDS_PROJECTION = {"_id": 1, "name": 1, "geolocation": 1, "place_ids": 1}
-COURT_EXISTS_PROJECTION = {"_id": 1}
 
 
 def _lookup_place_ids(db, lon: float, lat: float) -> list[str]:
@@ -37,7 +35,6 @@ def add_court(lon: float, lat: float, name: str) -> dict | None:
     radius_radians = DUPLICATE_RADIUS_METERS / EARTH_RADIUS_METERS
     existing = db.courts.get_one(
         {"geolocation": {"$geoWithin": {"$centerSphere": [[lon, lat], radius_radians]}}},
-        COURT_EXISTS_PROJECTION,
     )
     if existing is not None:
         return None
@@ -47,3 +44,4 @@ def add_court(lon: float, lat: float, name: str) -> dict | None:
     court = Court(name=name, geolocation=geolocation, place_ids=place_ids)
     court.id = db.courts.insert_one(court.to_doc())
     return serialize_court(court)
+

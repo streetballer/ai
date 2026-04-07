@@ -8,7 +8,6 @@ from src.common.models.team import Team
 TEAM_MIN_PLAYERS = 2
 PLAYER_TEAM_PROJECTION = {"_id": 1, "team_id": 1}
 PLAYER_EXISTS_PROJECTION = {"_id": 1, "team_id": 1}
-TEAM_EXISTS_PROJECTION = {"_id": 1}
 
 
 def _delete_team(db, team_id: str) -> None:
@@ -56,7 +55,6 @@ def edit_team(player_id: str, color: str | None, add_player_ids: list[str] | Non
                     "_id": {"$in": [ObjectId(tid) for tid in team_ids_to_check]},
                     "last_activity": {"$gte": Team.active_cutoff()},
                 },
-                TEAM_EXISTS_PROJECTION,
             ):
                 active_team_ids.add(str(tdoc["_id"]))
 
@@ -71,12 +69,17 @@ def edit_team(player_id: str, color: str | None, add_player_ids: list[str] | Non
             db.teams.update_one({"_id": ObjectId(team.id)}, {"$set": {"last_activity": now}})
 
     if remove_player_ids:
+        valid_remove_oids = []
         for pid in remove_player_ids:
             try:
-                oid = ObjectId(pid)
+                valid_remove_oids.append(ObjectId(pid))
             except Exception:
                 continue
-            db.players.update_one({"_id": oid, "team_id": team.id}, {"$set": {"team_id": ""}})
+        if valid_remove_oids:
+            db.players.update_many(
+                {"_id": {"$in": valid_remove_oids}, "team_id": team.id},
+                {"$set": {"team_id": ""}},
+            )
 
         remaining = db.players.get_many({"team_id": team.id}, {"_id": 1})
         if len(remaining) < TEAM_MIN_PLAYERS:

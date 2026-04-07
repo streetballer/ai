@@ -1,10 +1,13 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any
+from typing import Any, ClassVar
 
 
 @dataclass
 class Score:
+    MIN_POINTS: ClassVar[int] = 1
+    MAX_POINTS: ClassVar[int] = 9
+
     id: str = ""
     timestamp: datetime | None = None
     result: tuple[int, int] = (0, 0)
@@ -19,6 +22,18 @@ class Score:
     geolocation: dict | None = None
     court_id: str = ""
     place_ids: list[str] = field(default_factory=list)
+
+    @classmethod
+    def calculate_winner_points(cls, winner_avg: float, loser_avg: float) -> int:
+        points = 5.0 - (winner_avg - loser_avg)
+        return max(cls.MIN_POINTS, min(cls.MAX_POINTS, round(points)))
+
+    @staticmethod
+    def side_voted(player_ids: list[str], votes: list[str]) -> bool:
+        if not player_ids:
+            return False
+        count = sum(1 for pid in player_ids if pid in votes)
+        return count > len(player_ids) / 2
 
     def to_doc(self) -> dict[str, Any]:
         return {

@@ -8,7 +8,6 @@ PRIVATE_PLAYER_PROJECTION = {
     "language": 1, "team_id": 1, "geolocation": 1,
     "google_id": 1, "apple_id": 1, "facebook_id": 1,
 }
-PUBLIC_PLAYER_PROJECTION = {"_id": 1, "username": 1, "language": 1, "team_id": 1}
 
 
 def get_own_player(player_id: str) -> dict | None:
@@ -25,7 +24,7 @@ def get_own_player(player_id: str) -> dict | None:
 def get_player_by_id(player_id: str) -> dict | None:
     db = get_database()
     try:
-        doc = db.players.get_one({"_id": ObjectId(player_id)}, PUBLIC_PLAYER_PROJECTION)
+        doc = db.players.get_one({"_id": ObjectId(player_id)}, Player.PUBLIC_PROJECTION)
     except Exception:
         return None
     if doc is None:

@@ -15,10 +15,10 @@ class Collection:
     def __init__(self, collection: Any) -> None:
         self._collection = collection
 
-    def get_one(self, filter: dict[str, Any], projection: dict[str, Any]) -> dict[str, Any] | None:
+    def get_one(self, filter: dict[str, Any], projection: dict[str, Any] = {"_id": 1}) -> dict[str, Any] | None:
         return self._collection.find_one(filter, projection)
 
-    def get_many(self, filter: dict[str, Any], projection: dict[str, Any], limit: int | None = None) -> list[dict[str, Any]]:
+    def get_many(self, filter: dict[str, Any], projection: dict[str, Any] = {"_id": 1}, limit: int | None = None) -> list[dict[str, Any]]:
         cursor = self._collection.find(filter, projection)
         if limit is not None:
             cursor = cursor.limit(limit)

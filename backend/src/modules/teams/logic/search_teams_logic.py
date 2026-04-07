@@ -4,7 +4,6 @@ from src.common.models.team import Team
 from src.common.utilities.serialize import serialize_team
 
 SEARCH_RADIUS_METERS = 10000
-TEAM_FIELDS_PROJECTION = {"_id": 1, "color": 1, "geolocation": 1, "court_id": 1, "last_activity": 1}
 
 
 def search_teams_by_court(court_id: str) -> list[dict]:
@@ -12,7 +11,7 @@ def search_teams_by_court(court_id: str) -> list[dict]:
     cutoff = Team.active_cutoff()
     docs = db.teams.get_many(
         {"court_id": court_id, "last_activity": {"$gte": cutoff}},
-        TEAM_FIELDS_PROJECTION,
+        Team.FIELDS_PROJECTION,
     )
     return [serialize_team(Team.from_doc(doc)) for doc in docs]
 
@@ -26,6 +25,6 @@ def search_teams_by_location(lon: float, lat: float) -> list[dict]:
             "geolocation": {"$geoWithin": {"$centerSphere": [[lon, lat], radius_radians]}},
             "last_activity": {"$gte": cutoff},
         },
-        TEAM_FIELDS_PROJECTION,
+        Team.FIELDS_PROJECTION,
     )
     return [serialize_team(Team.from_doc(doc)) for doc in docs]
