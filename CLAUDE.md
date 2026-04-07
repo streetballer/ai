@@ -180,7 +180,7 @@ At the end of every session, update "Project Status", "Commands", and "Notes" au
 
 | Task             | Comments                                            |
 | ---------------- | --------------------------------------------------- |
-| Last Task        | Backend review and refactoring; 185 passing         |
+| Last Task        | Build seed infrastructure; Granada reference data   |
 | Next Task        | Frontend development                                |
 | Blocking Factors |                                                     |
 
@@ -191,6 +191,7 @@ At the end of every session, update "Project Status", "Commands", and "Notes" au
 | `cd backend && uv run uvicorn src.main:app --port 3000 --reload` | Start dev server     |
 | `cd backend && uv run pytest test/tests/ -v`                     | Run tests            |
 | `cd backend && uv sync --dev`                                    | Install dependencies |
+| `cd backend && uv run python -m seed.seed`                       | Seed database        |
 
 ### Notes
 
@@ -210,3 +211,5 @@ At the end of every session, update "Project Status", "Commands", and "Notes" au
 - Always push filter predicates into DB queries (e.g. `last_activity: {$gte: cutoff}`); never fetch then filter in Python
 - Shared model logic: `Score.side_voted()`, `Score.calculate_winner_points()`, `Game.floor_to_hour()`; geo distance via `src.common.utilities.geo.distance_meters`
 - `GET /teams/{team_id}` accepts optional `?by=team|player`; omitting `by` tries team ID first then player ID fallback
+- Seed data: 5 places, 10 courts, 8 players (password: streetballer123), 3 active teams, 4 upcoming games, 6 confirmed scores; all near Granada, Spain (37.1734, -3.5997); run idempotently via `uv run python -m seed.seed`
+- `Place` has no `to_doc()`; insert raw dicts directly; all other models use `model.to_doc()`
