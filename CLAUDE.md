@@ -178,11 +178,11 @@ At the end of every session, update "Project Status", "Commands", and "Notes" au
 
 ### Project Status
 
-| Task             | Comments                                         |
-| ---------------- | ------------------------------------------------ |
-| Last Task        | Build settings module endpoints; 185 passing     |
-| Next Task        | TBD                                              |
-| Blocking Factors |                                                  |
+| Task             | Comments                                            |
+| ---------------- | --------------------------------------------------- |
+| Last Task        | Backend review and refactoring; 185 passing         |
+| Next Task        | Frontend development                                |
+| Blocking Factors |                                                     |
 
 ### Commands
 
@@ -204,5 +204,9 @@ At the end of every session, update "Project Status", "Commands", and "Notes" au
 - MongoDB: use text indexes (`$text`) over regex (`$regex`) for text search
 - MongoDB: when text + coordinates are both provided, search by text first then sort results by distance
 - Data models: use dataclasses (`Player`, `Court`, `Game`, `Place`, `Score`) in `src/common/models/`; always call `Model.from_doc(doc)` when reading from DB; always call `model.to_doc()` when inserting to DB
-- DB projections: every DB read must include an explicit projection dict; default to `{"_id": 1}` for existence checks; define projections as module-level constants near the top of logic files
+- DB projections: omit projection arg on `get_one`/`get_many` for pure existence checks (defaults to `{"_id": 1}`); for multi-field reads, use model ClassVars (`Player.PUBLIC_PROJECTION`, `Team.FIELDS_PROJECTION`, `Court.FIELDS_PROJECTION`, `Game.FIELDS_PROJECTION`) or define a module-level constant
 - DB wrapper: use `get_one`/`get_many`/`insert_one`/`update_one`/`update_many`/`delete_one` from `src.common.libraries.database`; `insert_one` returns `str`; catch `DuplicateEntryError` (not pymongo's `DuplicateKeyError`)
+- Always query player `_id` with `ObjectId(player_id)`; `Player.to_doc()` stores `_id` as `ObjectId`, consistent with all other models
+- Always push filter predicates into DB queries (e.g. `last_activity: {$gte: cutoff}`); never fetch then filter in Python
+- Shared model logic: `Score.side_voted()`, `Score.calculate_winner_points()`, `Game.floor_to_hour()`; geo distance via `src.common.utilities.geo.distance_meters`
+- `GET /teams/{team_id}` accepts optional `?by=team|player`; omitting `by` tries team ID first then player ID fallback
