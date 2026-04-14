@@ -6,7 +6,7 @@ from src.common.utilities.serialize import serialize_place
 
 SEARCH_RADIUS_METERS = 50000
 SEARCH_LIMIT = 20
-PLACE_FIELDS_PROJECTION = {"_id": 1, "geolocation": 1, "geolocation_box": 1, "address": 1, "is_parent": 1, "parent_ids": 1}
+PLACE_FIELDS_PROJECTION = {"_id": 1, "name": 1, "type": 1, "geolocation": 1, "geolocation_box": 1, "parent_ids": 1}
 
 
 def search_places(text: str | None, lon: float | None, lat: float | None) -> list[dict]:

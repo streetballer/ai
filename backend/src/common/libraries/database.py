@@ -80,7 +80,7 @@ def setup_indexes() -> None:
     db.games.create_index("timestamp")
     db.scores.create_index("player_ids")
     db.places.create_index([("geolocation", "2dsphere")])
-    db.places.create_index([("address", "text")])
+    db.places.create_index([("name", "text")])
 
 
 def close_database() -> None:

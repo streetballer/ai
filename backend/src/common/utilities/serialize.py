@@ -77,9 +77,9 @@ def serialize_score(score: Score) -> dict[str, Any]:
 def serialize_place(place: Place) -> dict[str, Any]:
     return {
         "id": place.id,
+        "name": place.name,
+        "type": place.type,
         "geolocation": place.geolocation,
         "geolocation_box": place.geolocation_box,
-        "address": place.address,
-        "is_parent": place.is_parent,
         "parent_ids": place.parent_ids,
     }

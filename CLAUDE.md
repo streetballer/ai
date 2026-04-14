@@ -178,20 +178,22 @@ At the end of every session, update "Project Status", "Commands", and "Notes" au
 
 ### Project Status
 
-| Task             | Comments                                            |
-| ---------------- | --------------------------------------------------- |
-| Last Task        | Build seed infrastructure; Granada reference data   |
-| Next Task        | Frontend development                                |
-| Blocking Factors |                                                     |
+| Task             | Comments                                                      |
+| ---------------- | ------------------------------------------------------------- |
+| Last Task        | Update Place model; incorporate world data pipeline           |
+| Next Task        | Frontend development                                          |
+| Blocking Factors |                                                               |
 
 ### Commands
 
-| Command                                                          | Task                 |
-| ---------------------------------------------------------------- | -------------------- |
-| `cd backend && uv run uvicorn src.main:app --port 3000 --reload` | Start dev server     |
-| `cd backend && uv run pytest test/tests/ -v`                     | Run tests            |
-| `cd backend && uv sync --dev`                                    | Install dependencies |
-| `cd backend && uv run python -m seed.seed`                       | Seed database        |
+| Command                                                                                                                   | Task                        |
+| ------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| `cd backend && uv run uvicorn src.main:app --port 3000 --reload`                                                          | Start dev server            |
+| `cd backend && uv run pytest test/tests/ -v`                                                                              | Run tests                   |
+| `cd backend && uv sync --dev`                                                                                             | Install dependencies        |
+| `cd backend && uv run python -m seed.seed`                                                                                | Seed database               |
+| `cd world && uv run python main.py`                                                                                       | Regenerate world place data |
+| `mongoimport --uri $MONGODB_URI --db $MONGODB_NAME --collection places --file world/data/processed/<cc>.json --jsonArray` | Import one country's places |
 
 ### Notes
 
@@ -211,5 +213,8 @@ At the end of every session, update "Project Status", "Commands", and "Notes" au
 - Always push filter predicates into DB queries (e.g. `last_activity: {$gte: cutoff}`); never fetch then filter in Python
 - Shared model logic: `Score.side_voted()`, `Score.calculate_winner_points()`, `Game.floor_to_hour()`; geo distance via `src.common.utilities.geo.distance_meters`
 - `GET /teams/{team_id}` accepts optional `?by=team|player`; omitting `by` tries team ID first then player ID fallback
-- Seed data: 5 places, 10 courts, 8 players (password: streetballer123), 3 active teams, 4 upcoming games, 6 confirmed scores; all near Granada, Spain (37.1734, -3.5997); run idempotently via `uv run python -m seed.seed`
+- Seed data: 7 places, 10 courts, 8 players (password: streetballer123), 3 active teams, 4 upcoming games, 6 confirmed scores; all near Granada, Spain (37.1734, -3.5997); run idempotently via `uv run python -m seed.seed`
 - `Place` has no `to_doc()`; insert raw dicts directly; all other models use `model.to_doc()`
+- `Place` model fields: `name` (str), `type` (str), `geolocation` (GeoJSON Point), `geolocation_box` (tuple), `parent_ids` (list[str]); type values mirror world data keys: `"place"`, `"zone_N"`, `"state"`, `"province"`, `"country"`, etc.
+- World data pipeline lives in `world/`; processed JSON for all ~190 countries is already in `world/data/processed/`; import into MongoDB manually via `mongoimport` — this is a one-time operation, not part of seed
+- To query leaf places (cities/towns) filter by `"type": "place"`; to query parents filter by any other type

@@ -7,10 +7,10 @@ client = TestClient(app)
 
 PLACE_DOC = {
     "_id": ObjectId(),
+    "name": "Los Angeles",
+    "type": "place",
     "geolocation": {"type": "Point", "coordinates": [-118.25, 34.05]},
     "geolocation_box": None,
-    "address": ["Los Angeles", "California", "US"],
-    "is_parent": False,
     "parent_ids": [],
 }
 

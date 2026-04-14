@@ -13,7 +13,7 @@ NEAREST_PLACE_PROJECTION = {"_id": 1, "parent_ids": 1}
 def _lookup_place_ids(db, lon: float, lat: float) -> list[str]:
     doc = db.places.get_one(
         {
-            "is_parent": False,
+            "type": "place",
             "geolocation": {
                 "$nearSphere": {
                     "$geometry": {"type": "Point", "coordinates": [lon, lat]},
