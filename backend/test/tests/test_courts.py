@@ -21,10 +21,11 @@ COURT_DOC = {
 
 PLACE_DOC = {
     "_id": ObjectId(PLACE_ID),
-    "address": ["Venice", "Los Angeles", "US"],
-    "is_parent": False,
-    "parent_ids": [PARENT_PLACE_ID],
+    "name": "Venice",
+    "type": "place",
     "geolocation": {"type": "Point", "coordinates": [-118.47, 33.98]},
+    "geolocation_box": [-118.63, 33.82, -118.31, 34.14],
+    "parent_ids": [PARENT_PLACE_ID],
 }
 
 

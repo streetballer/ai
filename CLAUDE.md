@@ -39,7 +39,7 @@ For amateur basketball players who face a lack of playing opportunities, Streetb
 | Dependency Injection  | Frontend | flutter_riverpod            |
 | Navigation            | Frontend | go_router                   |
 | Local Storage         | Frontend | flutter_secure_storage      |
-| HTTP Client           | Frontend | http                        |
+| HTTP Client           | Frontend | dio                         |
 | Localization          | Frontend | intl, flutter_localizations |
 | Maps                  | Frontend | google_maps_flutter         |
 | Geolocation           | Frontend | geolocator                  |
@@ -178,11 +178,11 @@ At the end of every session, update "Project Status", "Commands", and "Notes" au
 
 ### Project Status
 
-| Task             | Comments                                                      |
-| ---------------- | ------------------------------------------------------------- |
-| Last Task        | Process and deduplicate courts data; update data/ structure   |
-| Next Task        | Frontend development                                          |
-| Blocking Factors |                                                               |
+| Task             | Comments                                                    |
+| ---------------- | ----------------------------------------------------------- |
+| Last Task        | Process and deduplicate courts data; update data/ structure |
+| Next Task        | Frontend development                                        |
+| Blocking Factors |                                                             |
 
 ### Commands
 

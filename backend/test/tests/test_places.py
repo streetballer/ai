@@ -10,7 +10,7 @@ PLACE_DOC = {
     "name": "Los Angeles",
     "type": "place",
     "geolocation": {"type": "Point", "coordinates": [-118.25, 34.05]},
-    "geolocation_box": None,
+    "geolocation_box": [-118.41, 33.88, -118.09, 34.22],
     "parent_ids": [],
 }
 

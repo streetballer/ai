@@ -8,7 +8,7 @@ class Place:
     name: str = ""
     type: str = ""
     geolocation: dict | None = None
-    geolocation_box: tuple[float, float, float, float] | None = None
+    geolocation_box: tuple[float, float, float, float] = field(default_factory=tuple)
     parent_ids: list[str] = field(default_factory=list)
 
     @classmethod
@@ -18,6 +18,6 @@ class Place:
             name=doc.get("name", ""),
             type=doc.get("type", ""),
             geolocation=doc.get("geolocation"),
-            geolocation_box=doc.get("geolocation_box"),
+            geolocation_box=tuple(doc["geolocation_box"]),
             parent_ids=doc.get("parent_ids", []),
         )

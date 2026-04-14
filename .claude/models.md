@@ -35,7 +35,7 @@ class Player:
 class Place:
     id: str # Unique Place ID
     geolocation: Geolocation # Geographic Center
-    geolocation_box: Tuple[float, float, float, float] | None # Geographic Area: [Min. Longitude, Min. Latitude, Max. Longitude, Max. Latitude]
+    geolocation_box: Tuple[float, float, float, float] # Geographic Area: [Min. Longitude, Min. Latitude, Max. Longitude, Max. Latitude]
     address: List[str] # Address Fields from Narrow (e.g. "Los Angeles") to Broad (e.g. "US")
     is_parent: bool # Whether Place is Parent to Other Places (e.g. "Los Angeles" = False, "US" = True)
     parent_ids: List[str] # Associated Parent Place IDs
