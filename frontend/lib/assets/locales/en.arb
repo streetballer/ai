@@ -1,0 +1,11 @@
+{
+  "@@locale": "en",
+
+  "appName": "Streetballer",
+
+  "navHome": "Home",
+  "navGames": "Games",
+  "navCourts": "Courts",
+  "navLeague": "League",
+  "navPlayers": "Players"
+}
