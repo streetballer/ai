@@ -188,9 +188,13 @@ At the end of every session, update "Project Status", "Commands", and "Notes" au
 
 | Command                                                                                                                           | Task                        |
 | --------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
-| `cd backend && uv run uvicorn src.main:app --port 3000 --reload`                                                                  | Start dev server            |
-| `cd backend && uv run pytest test/tests/ -v`                                                                                      | Run tests                   |
-| `cd backend && uv sync --dev`                                                                                                     | Install dependencies        |
+| `cd frontend && flutter pub get`                                                                                                  | Install frontend deps       |
+| `cd frontend && flutter pub run build_runner build --delete-conflicting-outputs`                                                  | Regenerate frontend code    |
+| `cd frontend && flutter run`                                                                                                      | Start frontend dev server   |
+| `cd frontend && flutter test`                                                                                                     | Run frontend tests          |
+| `cd backend && uv run uvicorn src.main:app --port 3000 --reload`                                                                  | Start backend dev server    |
+| `cd backend && uv run pytest test/tests/ -v`                                                                                      | Run backend tests           |
+| `cd backend && uv sync --dev`                                                                                                     | Install backend deps        |
 | `cd backend && uv run python -m seed.seed`                                                                                        | Seed database               |
 | `cd data/places && uv run python main.py`                                                                                         | Regenerate world place data |
 | `mongoimport --uri $MONGODB_URI --db $MONGODB_NAME --collection places --file data/places/data/processed/<cc>.json --jsonArray`   | Import one country's places |
@@ -198,9 +202,12 @@ At the end of every session, update "Project Status", "Commands", and "Notes" au
 
 ### Notes
 
+- Flutter binary lives at `~/Data/flutter/bin/flutter`; add to PATH or use full path
+- Frontend lives in `frontend/`, run all Flutter commands from that directory; `env.g.dart` and `router.g.dart` are gitignored — run `build_runner build` after cloning
+- Frontend `.env` is gitignored; use `.env.example` as the template (contains `API_BASE_URL`)
 - Backend lives in `backend/`, run all commands from that directory
 - uv creates a `.venv` — IDE may show false "not installed" hints for system Python
-- `.env` is gitignored; use `.env.example` as the template
+- Backend `.env` is gitignored; use `.env.example` as the template
 - Add CLAUDE.md updates to the Notes section only; never edit sections above it
 - Always enforce model field access levels (public/private/secret) when serializing API responses
 - Implement business logic exactly as specified in models.md — never extrapolate
