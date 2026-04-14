@@ -180,20 +180,21 @@ At the end of every session, update "Project Status", "Commands", and "Notes" au
 
 | Task             | Comments                                                      |
 | ---------------- | ------------------------------------------------------------- |
-| Last Task        | Update Place model; incorporate world data pipeline           |
+| Last Task        | Process and deduplicate courts data; update data/ structure   |
 | Next Task        | Frontend development                                          |
 | Blocking Factors |                                                               |
 
 ### Commands
 
-| Command                                                                                                                         | Task                        |
-| ------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
-| `cd backend && uv run uvicorn src.main:app --port 3000 --reload`                                                                | Start dev server            |
-| `cd backend && uv run pytest test/tests/ -v`                                                                                    | Run tests                   |
-| `cd backend && uv sync --dev`                                                                                                   | Install dependencies        |
-| `cd backend && uv run python -m seed.seed`                                                                                      | Seed database               |
-| `cd data/places && uv run python main.py`                                                                                       | Regenerate world place data |
-| `mongoimport --uri $MONGODB_URI --db $MONGODB_NAME --collection places --file data/places/data/processed/<cc>.json --jsonArray` | Import one country's places |
+| Command                                                                                                                           | Task                        |
+| --------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| `cd backend && uv run uvicorn src.main:app --port 3000 --reload`                                                                  | Start dev server            |
+| `cd backend && uv run pytest test/tests/ -v`                                                                                      | Run tests                   |
+| `cd backend && uv sync --dev`                                                                                                     | Install dependencies        |
+| `cd backend && uv run python -m seed.seed`                                                                                        | Seed database               |
+| `cd data/places && uv run python main.py`                                                                                         | Regenerate world place data |
+| `mongoimport --uri $MONGODB_URI --db $MONGODB_NAME --collection places --file data/places/data/processed/<cc>.json --jsonArray`   | Import one country's places |
+| `mongoimport --uri $MONGODB_URI --db $MONGODB_NAME --collection courts --file data/courts/data/processed/courts.json --jsonArray` | Import courts data          |
 
 ### Notes
 
@@ -216,5 +217,5 @@ At the end of every session, update "Project Status", "Commands", and "Notes" au
 - Seed data: 7 places, 10 courts, 8 players (password: streetballer123), 3 active teams, 4 upcoming games, 6 confirmed scores; all near Granada, Spain (37.1734, -3.5997); run idempotently via `uv run python -m seed.seed`
 - `Place` has no `to_doc()`; insert raw dicts directly; all other models use `model.to_doc()`
 - `Place` model fields: `name` (str), `type` (str), `geolocation` (GeoJSON Point), `geolocation_box` (tuple), `parent_ids` (list[str]); type values mirror world data keys: `"place"`, `"zone_N"`, `"state"`, `"province"`, `"country"`, etc.
-- Data pipelines live in `data/{collection}/` — each folder has a `main.py` and a `data/` subfolder; `data/places/` holds the world generation script and processed JSON for all ~190 countries; import into MongoDB manually via `mongoimport` — this is a one-time operation, not part of seed
+- Data pipelines live in `data/{collection}/` — each folder has a `data/` subfolder with `original/` and `processed/`; only `data/places/` has a `main.py` generation script; courts processed data lives at `data/courts/data/processed/courts.json`; import into MongoDB manually via `mongoimport` — this is a one-time operation, not part of seed
 - To query leaf places (cities/towns) filter by `"type": "place"`; to query parents filter by any other type
