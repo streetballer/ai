@@ -16,6 +16,18 @@ from requests import get
 from scipy.cluster.hierarchy import fcluster, linkage
 from scipy.spatial import cKDTree
 
+GEOAPIFY_BASE_URL = "https://www.geoapify.com/data-share/localities/"
+DATA_ORIGINAL_DIR = "./data/original/"
+DATA_PROCESSED_DIR = "./data/processed/"
+ZIP_SOURCE_FILES = ["city.ndjson", "town.ndjson"]
+ADDRESS_KEYS_TO_STRIP = ["ISO3166", "country_code", "postcode"]
+GEOLOCATION_PRECISION = 4
+POPULATION_ROUND_FACTOR = -2
+EARTH_RADIUS_KM = 6371
+MAX_SCALE_GROWTH_FACTOR = 4
+CLUSTER_NAME_MAX_COUNT = 3
+CLUSTER_NAME_MIN_CUMULATIVE_SHARE = 0.75
+CLUSTER_NAME_DROP_RATIO = 3
 
 @dataclass
 class Place:
@@ -39,23 +51,22 @@ class ProductionPlace:
 
 
 def list_countries():
-    url = "https://www.geoapify.com/data-share/localities/"
-    response = get(url)
+    response = get(GEOAPIFY_BASE_URL)
     matches = findall(r'href="([a-z]{2})\.zip"', response.text)
     return sorted(set(matches))
 
 
 def load_place_data(country: str):
     country = country.strip().lower()
-    file_path = "./data/original/" + country + ".ndjson"
+    file_path = DATA_ORIGINAL_DIR + country + ".ndjson"
     if not isfile(file_path):
-        url = "https://www.geoapify.com/data-share/localities/" + country + ".zip"
+        url = GEOAPIFY_BASE_URL + country + ".zip"
         response = get(url)
         if response.status_code == 200:
             with ZipFile(BytesIO(response.content)) as zip:
                 zip_files = zip.namelist()
                 with open(file_path, "wb") as out_file:
-                    for source_file in ["city.ndjson", "town.ndjson"]:
+                    for source_file in ZIP_SOURCE_FILES:
                         for zip_file in zip_files:
                             if source_file in zip_file:
                                 with zip.open(zip_file) as in_file:
@@ -67,19 +78,19 @@ def load_place_data(country: str):
                 row = read_json(line)
                 address = row.get("address", {})
                 for key in list(address.keys()):
-                    if "ISO3166" in key or "country_code" in key or "postcode" in key:
+                    if any(strip in key for strip in ADDRESS_KEYS_TO_STRIP):
                         address.pop(key)
                 geolocation = (
-                    round(row.get("location")[0], 4),
-                    round(row.get("location")[1], 4),
+                    round(row.get("location")[0], GEOLOCATION_PRECISION),
+                    round(row.get("location")[1], GEOLOCATION_PRECISION),
                 )
                 geolocation_box = (
-                    round(row.get("bbox")[0], 4),
-                    round(row.get("bbox")[1], 4),
-                    round(row.get("bbox")[2], 4),
-                    round(row.get("bbox")[3], 4),
+                    round(row.get("bbox")[0], GEOLOCATION_PRECISION),
+                    round(row.get("bbox")[1], GEOLOCATION_PRECISION),
+                    round(row.get("bbox")[2], GEOLOCATION_PRECISION),
+                    round(row.get("bbox")[3], GEOLOCATION_PRECISION),
                 )
-                population = round(row.get("population", 0), -2)
+                population = round(row.get("population", 0), POPULATION_ROUND_FACTOR)
                 place = Place(address, geolocation, geolocation_box, population)
                 places.append(place)
             except:
@@ -248,7 +259,7 @@ def calculate_haversine_km(lon_a: float, lat_a: float, lon_b: float, lat_b: floa
         sin(delta_latitudes / 2) ** 2
         + cos(radians(lat_a)) * cos(radians(lat_b)) * sin(delta_longitudes / 2) ** 2
     )
-    return 2 * 6371 * asin(sqrt(a))
+    return 2 * EARTH_RADIUS_KM * asin(sqrt(a))
 
 
 def calculate_natural_scale_km(places: list[Place]):
@@ -264,7 +275,7 @@ def calculate_natural_scale_km(places: list[Place]):
     tree = cKDTree(coords_3d)
     distances, _ = tree.query(coords_3d, k=2)
     nearest_distances_3d = distances[:, 1]
-    nearest_distances_km = 2 * 6371 * np.arcsin(np.clip(nearest_distances_3d / 2, 0, 1))
+    nearest_distances_km = 2 * EARTH_RADIUS_KM * np.arcsin(np.clip(nearest_distances_3d / 2, 0, 1))
     return float(np.median(nearest_distances_km))
 
 
@@ -295,7 +306,7 @@ def calculate_layer_scale_km(places: list[Place], layer: str):
             * np.cos(child_latitudes)
             * np.sin(delta_longitudes / 2) ** 2
         )
-        distances = 2 * 6371 * np.arcsin(np.sqrt(np.clip(a, 0, 1)))
+        distances = 2 * EARTH_RADIUS_KM * np.arcsin(np.sqrt(np.clip(a, 0, 1)))
         layer_distances.append(float(distances.mean()))
     return float(median(layer_distances)) if len(layer_distances) > 0 else 0.0
 
@@ -315,10 +326,9 @@ def calculate_zone_requirements(places: list[Place], administrative_layers: list
         zones[lower_key] = round(lower_scale, 3)
         lower_scale = max(values[: i + 1])
         scale_growth = upper_scale / lower_scale if lower_scale > 0 else 0
-        scale_growth_limit = 4
-        if scale_growth > scale_growth_limit:
-            n_zones = ceil(log(scale_growth) / log(scale_growth_limit)) - 1
-            if n_zones > 1 and scale_growth > scale_growth_limit * 1.5:
+        if scale_growth > MAX_SCALE_GROWTH_FACTOR:
+            n_zones = ceil(log(scale_growth) / log(MAX_SCALE_GROWTH_FACTOR)) - 1
+            if n_zones > 1 and scale_growth > MAX_SCALE_GROWTH_FACTOR * 1.5:
                 print(
                     f"Warning: Consecutive custom zones strongly recommended ({round(scale_growth, 1)}x)"
                 )
@@ -373,7 +383,7 @@ def cluster_places(places: list[Place], lower_key: str, upper_key: str, scale: f
                 * np.cos(latitudes[i + 1 :])
                 * np.sin(delta_longitudes / 2) ** 2
             )
-            rows.append(2 * 6371 * np.arcsin(np.sqrt(np.clip(a, 0, 1))))
+            rows.append(2 * EARTH_RADIUS_KM * np.arcsin(np.sqrt(np.clip(a, 0, 1))))
         zone_candidate_distances = np.concatenate(rows)
         linkage_tree = linkage(zone_candidate_distances, method="average")
         cluster_ids = fcluster(linkage_tree, scale, criterion="distance")
@@ -398,20 +408,17 @@ def name_cluster(cluster: list[Place]):
             (p.population / population if population > 0 else 1 / len(cluster))
             for p in cluster
         ]
-        name_count_threshold = 3
-        cumulative_share_threshold = 0.75
-        drop_threshold = 3
         cumulative_share: float = 0.0
         for i, place in enumerate(cluster):
             name_elements.append(list(place.address.values())[0])
             cumulative_share += population_shares[i]
             if (
-                len(name_elements) >= name_count_threshold
-                or cumulative_share >= cumulative_share_threshold
+                len(name_elements) >= CLUSTER_NAME_MAX_COUNT
+                or cumulative_share >= CLUSTER_NAME_MIN_CUMULATIVE_SHARE
                 or (
                     i + 1 < len(cluster)
                     and population_shares[i] / population_shares[i + 1]
-                    >= drop_threshold
+                    >= CLUSTER_NAME_DROP_RATIO
                 )
             ):
                 break
@@ -473,7 +480,6 @@ def convert_places_for_production(places: list[Place]):
 
 
 countries = list_countries()
-countries = ["es"]
 
 for country in countries:
     print("----------------------------------------------------------------")
@@ -487,7 +493,7 @@ for country in countries:
         places = create_zones(places, zones)
         places = sort_places(places, list(zones.keys()))
         data = convert_places_for_production(places)
-        with open("./data/processed/" + country + ".json", "w") as f:
+        with open(DATA_PROCESSED_DIR + country + ".json", "w") as f:
             write_json(data, f, ensure_ascii=False)
         print(
             f"{country.upper()} ({len(places)}): {' - '.join([f'{k} ({round(v, 1)}km)' for k, v in zones.items()])}"
