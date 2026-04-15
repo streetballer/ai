@@ -1,1 +1,10 @@
 include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+  errors:
+    # build_runner uses analyzer 6.4.1 (language version 3.4) which cannot parse
+    # the Dart 3.7 null-aware element syntax (?expr in collections). Use
+    # `if (x case final a?) a` instead, which is valid from Dart 3.0 onwards.
+    use_null_aware_elements: ignore

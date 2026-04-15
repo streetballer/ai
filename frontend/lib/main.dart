@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:streetballer/common/constants/theme.dart';
+import 'package:streetballer/common/libraries/mapbox_init.dart';
 import 'package:streetballer/common/libraries/localizations/app_localizations.dart';
 import 'package:streetballer/common/routes/router.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initMapbox();
   runApp(const ProviderScope(child: App()));
 }
 

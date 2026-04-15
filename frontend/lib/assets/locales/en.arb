@@ -7,5 +7,7 @@
   "navGames": "Games",
   "navCourts": "Courts",
   "navLeague": "League",
-  "navPlayers": "Players"
+  "navPlayers": "Players",
+
+  "mapSearchPlaceholder": "Search a location"
 }

@@ -40,7 +40,7 @@ For amateur basketball players who face a lack of playing opportunities, Streetb
 | Local Storage         | Frontend | flutter_secure_storage      |
 | HTTP Client           | Frontend | dio                         |
 | Localization          | Frontend | intl, flutter_localizations |
-| Maps                  | Frontend | google_maps_flutter         |
+| Maps                  | Frontend | mapbox_maps_flutter         |
 | Geolocation           | Frontend | geolocator                  |
 | SVG Images            | Frontend | flutter_svg                 |
 | QR Codes              | Frontend | mobile_scanner, qr_flutter  |
@@ -179,8 +179,8 @@ At the end of every session, update "Project Status", "Commands", and "Notes" au
 
 | Task             | Comments                                                                                      |
 | ---------------- | --------------------------------------------------------------------------------------------- |
-| Last Task        | Build frontend foundation: icon set, typography, navigation shell, route tree, common widgets |
-| Next Task        | Implement module screens (home, games, map, league, player, settings)                         |
+| Last Task        | Implement map screen: Mapbox (mobile) + Google Maps (web), platform-conditional init          |
+| Next Task        | Implement remaining module screens (home, games, court detail, league, player, settings)      |
 | Blocking Factors |                                                                                               |
 
 ### Commands
@@ -203,7 +203,7 @@ At the end of every session, update "Project Status", "Commands", and "Notes" au
 
 - Flutter binary lives at `~/Data/flutter/bin/flutter`; add to PATH or use full path
 - Frontend lives in `frontend/`, run all Flutter commands from that directory; `env.g.dart` and `router.g.dart` are gitignored — run `build_runner build` after cloning
-- Frontend `.env` is gitignored; use `.env.example` as the template (contains `API_BASE_URL`)
+- Frontend `.env` is gitignored; use `.env.example` as the template (contains `API_BASE_URL`, `MAPBOX_TOKEN`, `GOOGLE_MAPS_KEY`); Google Maps key also goes directly in `frontend/web/index.html` (JS API, can't use envied for HTML)
 - Backend lives in `backend/`, run all commands from that directory
 - uv creates a `.venv` — IDE may show false "not installed" hints for system Python
 - Backend `.env` is gitignored; use `.env.example` as the template
@@ -225,9 +225,10 @@ At the end of every session, update "Project Status", "Commands", and "Notes" au
 - `Place` model fields: `name` (str), `type` (str), `geolocation` (GeoJSON Point), `geolocation_box` (tuple, non-nullable), `parent_ids` (list[str]); type values: `"place"`, `"zone_N"`, `"state"`, `"province"`, `"country"`, etc.
 - Data pipelines live in `data/{collection}/`; courts data at `data/courts/data/processed/courts.json`; import via `mongoimport` — one-time, not part of seed
 - Index creation is seed-only (`setup_indexes()` is called by seed, NOT on app startup)
+- Map screen uses platform-conditional widgets: Mapbox (`platform_map_mobile.dart`) on Android/iOS, Google Maps (`platform_map_web.dart`) on web; conditional export via `platform_map.dart`; mapbox init similarly split via `mapbox_init.dart`
 - Frontend models in `frontend/lib/common/models/`; services in `common/services/`; library wrappers in `common/libraries/`; shared widgets in `common/widgets/`
 - Use `package:streetballer/...` imports everywhere — never relative paths
-- Dart 3 pattern matching for nullable widgets in lists: `if (x case final a?) a` instead of `if (x != null) x!`
+- Dart 3 pattern matching for nullable widgets in lists: `if (x case final a?) a` instead of `if (x != null) x!`; do NOT use `?expr` (Dart 3.7 syntax — breaks build_runner's analyzer 6.4.1)
 - Global keep-alive Riverpod providers: `storageServiceProvider`, `backendServiceProvider`, `geolocationProvider`
 - `BackendService.get/post` returns `Map<String, dynamic>?` — null = request failed; `{}` = success with no data body
 - All frontend assets (icons, images, fonts, locales) live in `frontend/lib/assets/`; reference as `lib/assets/…` in pubspec.yaml and in Dart asset path strings
