@@ -3,12 +3,13 @@ import 'package:streetballer/common/constants/borders.dart';
 import 'package:streetballer/common/constants/colors.dart';
 import 'package:streetballer/common/constants/spacing.dart';
 import 'package:streetballer/common/constants/typography.dart';
+import 'package:streetballer/common/widgets/app_icon.dart';
 
 class AppTextField extends StatelessWidget {
   final TextEditingController? controller;
   final String? label;
   final String placeholder;
-  final IconData icon;
+  final String icon;
   final bool obscureText;
   final TextInputType keyboardType;
   final ValueChanged<String>? onChanged;
@@ -42,23 +43,33 @@ class AppTextField extends StatelessWidget {
             borderRadius: BorderRadius.circular(borderRadiusMedium),
             border: Border.all(color: colorOutline, width: borderWidthSmall),
           ),
-          child: TextField(
-            controller: controller,
-            obscureText: obscureText,
-            keyboardType: keyboardType,
-            onChanged: onChanged,
-            onSubmitted: onSubmitted,
-            style: textBodyMedium,
-            decoration: InputDecoration(
-              hintText: placeholder,
-              hintStyle: textBodyMedium.copyWith(color: colorNeutral),
-              prefixIcon: Icon(icon, color: colorNeutral, size: 20),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: spaceLarge,
-                vertical: spaceLarge,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: spaceLarge),
+                child: AppIcon(icon, size: 20, color: colorNeutral),
               ),
-            ),
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  obscureText: obscureText,
+                  keyboardType: keyboardType,
+                  onChanged: onChanged,
+                  onSubmitted: onSubmitted,
+                  style: textBodyMedium,
+                  decoration: InputDecoration(
+                    hintText: placeholder,
+                    hintStyle: textBodyMedium.copyWith(color: colorNeutral),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: spaceMedium,
+                      vertical: spaceLarge,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],

@@ -7,9 +7,6 @@ class PlayerScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(),
-      body: Center(child: Text('Player $playerId')),
-    );
+    return Center(child: Text('Player $playerId'));
   }
 }

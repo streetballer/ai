@@ -38,13 +38,13 @@ flutter:
   generate: true
 
   # assets and fonts will be added as files are introduced
-  # assets:
-  #   - assets/icons/
-  #   - assets/images/
-  # fonts:
-  #   - family: DM Sans
-  #     fonts:
-  #       - asset: assets/fonts/DMSans-Regular.ttf
-  #         weight: 400
-  #       - asset: assets/fonts/DMSans-Bold.ttf
-  #         weight: 700
+  assets:
+    - lib/assets/icons/
+    - lib/assets/images/
+  fonts:
+    - family: DM Sans
+      fonts:
+        - asset: lib/assets/fonts/dm_sans-400.ttf
+          weight: 400
+        - asset: lib/assets/fonts/dm_sans-700.ttf
+          weight: 700

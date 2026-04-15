@@ -10,12 +10,11 @@ For amateur basketball players who face a lack of playing opportunities, Streetb
 | ------------------- | --------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------- |
 | /home               | Top-level Route | ![01-home.png](./.claude/screens/01-home.png)                     | Manage team, See nearby players/teams, Manage recent scores, Record scores |
 | /games              | Top-level Route | ![02-games.png](./.claude/screens/02-games.png)                   | Find upcoming games                                                        |
-| /courts             | Top-level Route | ![03-courts.png](./.claude/screens/03-courts.png)                 | Browse basketball courts, Add missing courts                               |
-| /courts/:court_id   | Child Route     | ![04-court.png](./.claude/screens/04-court.png)                   | View court details, Find upcoming games, Sign up to play                   |
+| /map                | Top-level Route | ![03-map.png](./.claude/screens/03-map.png)                       | Browse basketball courts, Add missing courts                               |
+| /map/:court_id      | Child Route     | ![04-court.png](./.claude/screens/04-court.png)                   | View court details, Find upcoming games, Sign up to play                   |
 | /league             | Top-level Route | ![05-league.png](./.claude/screens/05-league.png)                 | Follow league rankings                                                     |
-| /score              | Child Route     | ![06-score.png](./.claude/screens/06-score.png)                   | See score details, Confirm/reject scores                                   |
-| /players            | Top-level Route | ![07-player.png](./.claude/screens/07-player.png)                 | See own player profile, See scores history                                 |
-| /players/:player_id | Child Route     | ![07-player.png](./.claude/screens/07-player.png)                 | See player profile, See matchup history                                    |
+| /league/:score_id   | Child Route     | ![06-score.png](./.claude/screens/06-score.png)                   | See score details, Confirm/reject scores                                   |
+| /players/:player_id | Top-level Route | ![07-player.png](./.claude/screens/07-player.png)                 | See player profile, See matchup and scores history history                 |
 | /settings           | Top-level Route | ![08-settings.png](./.claude/screens/08-settings.png)             | Manage account settings                                                    |
 | /qr                 | Modal Overlay   | ![09-qr.png](./.claude/screens/09-qr.png)                         | Show own QR code, Invite people to Streetballer                            |
 | /authentication     | Modal Overlay   | ![10-authentication.png](./.claude/screens/10-authentication.png) | Log in, Create account, Reset password                                     |
@@ -61,7 +60,7 @@ For amateur basketball players who face a lack of playing opportunities, Streetb
 - frontend/ (Dart + Flutter Frontend)
   - dist/ (Production Code)
   - infrastructure/ (DevOps-related Files)
-  - src/ (Source Code)
+  - lib/ (Source Code)
     - assets/ (Static Assets)
       - fonts/ (TTF Fonts)
       - icons/ (SVG Icons)
@@ -178,11 +177,11 @@ At the end of every session, update "Project Status", "Commands", and "Notes" au
 
 ### Project Status
 
-| Task             | Comments                                                    |
-| ---------------- | ----------------------------------------------------------- |
-| Last Task        | Add atomic UI widgets; fix Place model; migrate http → dio  |
-| Next Task        | Review atomic common widgets; build courts module           |
-| Blocking Factors |                                                             |
+| Task             | Comments                                                                                      |
+| ---------------- | --------------------------------------------------------------------------------------------- |
+| Last Task        | Build frontend foundation: icon set, typography, navigation shell, route tree, common widgets |
+| Next Task        | Implement module screens (home, games, map, league, player, settings)                         |
+| Blocking Factors |                                                                                               |
 
 ### Commands
 
@@ -231,3 +230,9 @@ At the end of every session, update "Project Status", "Commands", and "Notes" au
 - Dart 3 pattern matching for nullable widgets in lists: `if (x case final a?) a` instead of `if (x != null) x!`
 - Global keep-alive Riverpod providers: `storageServiceProvider`, `backendServiceProvider`, `geolocationProvider`
 - `BackendService.get/post` returns `Map<String, dynamic>?` — null = request failed; `{}` = success with no data body
+- All frontend assets (icons, images, fonts, locales) live in `frontend/lib/assets/`; reference as `lib/assets/…` in pubspec.yaml and in Dart asset path strings
+- Common widgets: `AppIcon('name', {size, color})` → `lib/assets/icons/$name.svg`; `AppLogo({height, color})` → `lib/assets/images/streetballer_logo.svg`; both default to `colorForeground`
+- Flutter UI rule (paramount): build all visible components from low-level primitives (`InkWell`, `GestureDetector`, `Container`, `ColoredBox`, `Stack`); never use batteries-included Material widgets (`OutlinedButton`, `AppBar`, `BottomNavigationBar`, `Icon`, etc.)
+- Layout directives (`Expanded`, `Flexible`, `Spacer`) belong in the parent widget's `children` list — never return one from a child widget's `build()` method
+- Shell branches: home(0), games(1), map(2, child /map/:courtId), league(3, child /league/:scoreId), player(4, initialLocation: /players/me), settings(5); `/qr` and `/authentication` are fullscreen modals outside the shell
+- Navigation shell: top nav 48px (colorContainer bg, colorBackground active highlight, bottom border); bottom nav 64px (colorContainer bg, colorBackground active highlight, top border, 4px gaps between items); QR button is fixed 64×64 square with colorMain background

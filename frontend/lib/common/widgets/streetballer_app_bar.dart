@@ -11,25 +11,27 @@ class StreetballerAppBar extends StatelessWidget implements PreferredSizeWidget 
 
   @override
   Widget build(BuildContext context) {
-    return AppBar(
-      backgroundColor: colorBackground,
-      elevation: 0,
-      automaticallyImplyLeading: false,
-      leading: leading != null
-          ? Padding(
-              padding: const EdgeInsets.only(left: spaceLarge),
-              child: Align(alignment: Alignment.centerLeft, child: leading),
-            )
-          : null,
-      title: Text('Streetballer', style: textBodyLargeBold.copyWith(color: colorMain)),
-      centerTitle: true,
-      actions: [
-        if (trailing != null)
-          Padding(
-            padding: const EdgeInsets.only(right: spaceLarge),
-            child: Center(child: trailing),
+    return ColoredBox(
+      color: colorBackground,
+      child: SizedBox(
+        height: kToolbarHeight,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: spaceLarge),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              if (leading != null)
+                Align(alignment: Alignment.centerLeft, child: leading!),
+              Text(
+                'Streetballer',
+                style: textBodyLargeBold.copyWith(color: colorMain),
+              ),
+              if (trailing != null)
+                Align(alignment: Alignment.centerRight, child: trailing!),
+            ],
           ),
-      ],
+        ),
+      ),
     );
   }
 

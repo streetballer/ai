@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'colors.dart';
 
-// Updated to 'DM Sans' once the font asset is added to pubspec.yaml
 const String fontFamily = 'DM Sans';
 
 const TextStyle textTitle = TextStyle(
