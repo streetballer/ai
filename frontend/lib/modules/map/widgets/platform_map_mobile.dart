@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:streetballer/common/models/court.dart';
 import 'package:streetballer/common/models/geolocation.dart';
+import 'package:streetballer/common/models/map_bounds.dart';
 import 'package:streetballer/common/models/place.dart';
 
 class PlatformMapView extends StatefulWidget {
@@ -10,6 +11,7 @@ class PlatformMapView extends StatefulWidget {
   final Geolocation? userPosition;
   final Place? targetPlace;
   final void Function(String courtId) onCourtTap;
+  final void Function(Geolocation center, MapBounds bounds) onCameraIdle;
 
   const PlatformMapView({
     super.key,
@@ -17,6 +19,7 @@ class PlatformMapView extends StatefulWidget {
     this.userPosition,
     this.targetPlace,
     required this.onCourtTap,
+    required this.onCameraIdle,
   });
 
   @override
@@ -59,6 +62,39 @@ class _PlatformMapViewState extends State<PlatformMapView> {
     _annotationManager = await mapboxMap.annotations.createPointAnnotationManager();
     _annotationManager!.tapEvents(onTap: _onMarkerTap);
     await _updateMarkers(widget.courts);
+  }
+
+  Future<void> _onMapIdle(MapIdleEventData _) async {
+    final mapboxMap = _mapboxMap;
+    if (mapboxMap == null) return;
+
+    final camera = await mapboxMap.getCameraState();
+    final coordBounds = await mapboxMap.coordinateBoundsForCamera(
+      CameraOptions(
+        center: camera.center,
+        zoom: camera.zoom,
+        bearing: camera.bearing,
+        pitch: camera.pitch,
+        padding: camera.padding,
+      ),
+    );
+
+    final center = Geolocation(
+      longitude: camera.center.coordinates.lng.toDouble(),
+      latitude: camera.center.coordinates.lat.toDouble(),
+    );
+    final bounds = MapBounds(
+      southwest: Geolocation(
+        longitude: coordBounds.southwest.coordinates.lng.toDouble(),
+        latitude: coordBounds.southwest.coordinates.lat.toDouble(),
+      ),
+      northeast: Geolocation(
+        longitude: coordBounds.northeast.coordinates.lng.toDouble(),
+        latitude: coordBounds.northeast.coordinates.lat.toDouble(),
+      ),
+    );
+
+    widget.onCameraIdle(center, bounds);
   }
 
   Future<void> _updateMarkers(List<Court> courts) async {
@@ -124,6 +160,7 @@ class _PlatformMapViewState extends State<PlatformMapView> {
         zoom: position != null ? 13.0 : 1.5,
       ),
       onMapCreated: _onMapCreated,
+      onMapIdleListener: _onMapIdle,
     );
   }
 }

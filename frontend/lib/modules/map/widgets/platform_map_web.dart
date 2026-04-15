@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:streetballer/common/models/court.dart';
 import 'package:streetballer/common/models/geolocation.dart';
+import 'package:streetballer/common/models/map_bounds.dart';
 import 'package:streetballer/common/models/place.dart';
 
 class PlatformMapView extends StatefulWidget {
@@ -9,6 +10,7 @@ class PlatformMapView extends StatefulWidget {
   final Geolocation? userPosition;
   final Place? targetPlace;
   final void Function(String courtId) onCourtTap;
+  final void Function(Geolocation center, MapBounds bounds) onCameraIdle;
 
   const PlatformMapView({
     super.key,
@@ -16,6 +18,7 @@ class PlatformMapView extends StatefulWidget {
     this.userPosition,
     this.targetPlace,
     required this.onCourtTap,
+    required this.onCameraIdle,
   });
 
   @override
@@ -67,6 +70,29 @@ class _PlatformMapViewState extends State<PlatformMapView> {
     );
   }
 
+  Future<void> _onCameraIdle() async {
+    final controller = _controller;
+    if (controller == null) return;
+
+    final region = await controller.getVisibleRegion();
+    final center = Geolocation(
+      longitude: (region.southwest.longitude + region.northeast.longitude) / 2,
+      latitude: (region.southwest.latitude + region.northeast.latitude) / 2,
+    );
+    final bounds = MapBounds(
+      southwest: Geolocation(
+        longitude: region.southwest.longitude,
+        latitude: region.southwest.latitude,
+      ),
+      northeast: Geolocation(
+        longitude: region.northeast.longitude,
+        latitude: region.northeast.latitude,
+      ),
+    );
+
+    widget.onCameraIdle(center, bounds);
+  }
+
   @override
   void dispose() {
     _controller?.dispose();
@@ -87,6 +113,7 @@ class _PlatformMapViewState extends State<PlatformMapView> {
       ),
       markers: _markers,
       onMapCreated: (controller) => _controller = controller,
+      onCameraIdle: _onCameraIdle,
       myLocationEnabled: false,
       zoomControlsEnabled: false,
       mapToolbarEnabled: false,

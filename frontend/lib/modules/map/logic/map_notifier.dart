@@ -1,7 +1,10 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:streetballer/common/libraries/http_client.dart';
 import 'package:streetballer/common/models/court.dart';
+import 'package:streetballer/common/models/geolocation.dart';
+import 'package:streetballer/common/models/map_bounds.dart';
 import 'package:streetballer/common/models/place.dart';
+import 'package:streetballer/common/utilities/geo.dart';
 
 part 'map_notifier.g.dart';
 
@@ -40,14 +43,32 @@ class MapState {
 
 @riverpod
 class MapNotifier extends _$MapNotifier {
+  Geolocation? _lastSearchCenter;
+
   @override
   MapState build() => const MapState();
 
-  Future<void> loadCourts(double lon, double lat) async {
+  /// Called by the map widget when the camera has settled. Fetches courts if
+  /// the center has drifted more than half the visible diagonal since the last
+  /// search, ensuring coverage always exceeds the visible area.
+  Future<void> onCameraIdle(Geolocation center, MapBounds bounds) async {
+    final diagonal = haversineMeters(bounds.southwest, bounds.northeast);
+    final lastCenter = _lastSearchCenter;
+    if (lastCenter == null || haversineMeters(center, lastCenter) > diagonal / 2) {
+      _lastSearchCenter = center;
+      await _fetchCourts(center.longitude, center.latitude, diagonal);
+    }
+  }
+
+  Future<void> _fetchCourts(double lon, double lat, double radiusMeters) async {
     state = state.copyWith(isLoadingCourts: true);
     final response = await ref.read(backendServiceProvider).get(
       '/courts',
-      params: {'lon': lon.toString(), 'lat': lat.toString()},
+      params: {
+        'lon': lon.toString(),
+        'lat': lat.toString(),
+        'radius': radiusMeters.toStringAsFixed(0),
+      },
     );
     if (response == null) {
       state = state.copyWith(isLoadingCourts: false);
@@ -93,9 +114,9 @@ class MapNotifier extends _$MapNotifier {
     state = state.copyWith(placeResults: places, isLoadingPlaces: false);
   }
 
-  Future<void> selectPlace(Place place) async {
+  void selectPlace(Place place) {
+    _lastSearchCenter = null;
     state = state.copyWith(currentPlace: place, placeResults: []);
-    await loadCourts(place.geolocation.longitude, place.geolocation.latitude);
   }
 
   void clearPlaceResults() {

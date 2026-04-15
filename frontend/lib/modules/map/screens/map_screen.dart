@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:streetballer/common/constants/spacing.dart';
 import 'package:streetballer/common/libraries/geolocation.dart';
 import 'package:streetballer/common/models/geolocation.dart' show Geolocation;
+import 'package:streetballer/common/models/map_bounds.dart';
 import 'package:streetballer/modules/map/logic/map_notifier.dart';
 import 'package:streetballer/modules/map/widgets/map_add_court_button.dart';
 import 'package:streetballer/modules/map/widgets/map_place_search.dart';
@@ -31,11 +32,12 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
     if (position != null) {
       setState(() => _userPosition = position);
-      await Future.wait<void>([
-        ref.read(mapNotifierProvider.notifier).loadCourts(position.longitude, position.latitude),
-        ref.read(mapNotifierProvider.notifier).loadPlace(position.longitude, position.latitude),
-      ]);
+      await ref.read(mapNotifierProvider.notifier).loadPlace(position.longitude, position.latitude);
     }
+  }
+
+  void _onCameraIdle(Geolocation center, MapBounds bounds) {
+    ref.read(mapNotifierProvider.notifier).onCameraIdle(center, bounds);
   }
 
   @override
@@ -50,6 +52,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             userPosition: _userPosition,
             targetPlace: state.currentPlace,
             onCourtTap: (courtId) => context.push('/map/$courtId'),
+            onCameraIdle: _onCameraIdle,
           ),
         ),
         Positioned(
